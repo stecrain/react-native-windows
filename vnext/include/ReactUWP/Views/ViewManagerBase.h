@@ -11,6 +11,7 @@
 #include <yoga/yoga.h>
 
 #include <ReactWindowsCore/ReactWindowsAPI.h>
+#include <winrt/Windows.UI.Xaml.Core.Direct.h>
 
 namespace facebook { namespace react {
 struct ShadowNode;

@@ -18,6 +18,7 @@ using namespace folly;
 
 namespace winrt {
 using namespace Windows::UI::Xaml;
+using namespace Windows::UI::Xaml::Core::Direct;
 }
 
 namespace react { namespace uwp {

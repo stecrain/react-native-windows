@@ -16,6 +16,7 @@ using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Interop;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::Foundation;
+using namespace Windows::UI::Xaml::Core::Direct;
 } // namespace winrt
 
 namespace react
@@ -150,14 +151,20 @@ ViewPanel::ViewPanel()
 
 /*static*/ void ViewPanel::SetTop(winrt::Windows::UI::Xaml::UIElement &element, double value)
 {
-  element.SetValue(TopProperty(), winrt::box_value<double>(value));
-  element.InvalidateArrange();
+  auto xamlDirect = winrt::XamlDirect::GetDefault();
+  auto direct = xamlDirect.GetXamlDirectObject(winrt::box_value(element));
+  xamlDirect.SetDoubleProperty(direct, winrt::XamlPropertyIndex::Canvas_Top, value);
+  /*element.SetValue(TopProperty(), winrt::box_value<double>(value));
+  element.InvalidateArrange();*/
 }
 
 /*static*/ void ViewPanel::SetLeft(winrt::Windows::UI::Xaml::UIElement &element, double value)
 {
-  element.SetValue(LeftProperty(), winrt::box_value<double>(value));
-  element.InvalidateArrange();
+  auto xamlDirect = winrt::XamlDirect::GetDefault();
+  auto direct = xamlDirect.GetXamlDirectObject(winrt::box_value(element));
+  xamlDirect.SetDoubleProperty(direct, winrt::XamlPropertyIndex::Canvas_Left, value);
+  /*element.SetValue(LeftProperty(), winrt::box_value<double>(value));
+  element.InvalidateArrange();*/
 }
 
 winrt::Size ViewPanel::MeasureOverride(winrt::Size availableSize)
