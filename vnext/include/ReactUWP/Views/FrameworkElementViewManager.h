@@ -19,7 +19,7 @@ public:
 protected:
   virtual void TransferProperties(XamlView oldView, XamlView newView) override;
 
-  void TransferProperty(XamlView oldView, XamlView newView, winrt::Windows::UI::Xaml::DependencyProperty dp);
+  void TransferDoubleProperty(XamlView oldView, XamlView newView, XD::XamlPropertyIndex prop);
 
   void AnnounceIfNeeded(winrt::FrameworkElement element);
 };
