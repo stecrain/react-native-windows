@@ -40,13 +40,12 @@ folly::dynamic ActivityIndicatorViewManager::GetNativeProps() const
 
 XamlView ActivityIndicatorViewManager::CreateViewCore(int64_t tag)
 {
-  auto progressRing = winrt::ProgressRing();
-  return progressRing;
+  return XamlDirectInstance::GetXamlDirect().CreateInstance(XD::XamlTypeIndex::ProgressRing);
 }
 
 void ActivityIndicatorViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly::dynamic& reactDiffMap)
 {
-  auto progressRing = nodeToUpdate->GetView().as<winrt::ProgressRing>();
+  auto progressRing = nodeToUpdate->GetView();
   if (progressRing == nullptr)
     return;
 
@@ -58,9 +57,9 @@ void ActivityIndicatorViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate
     if (propertyName == "animating")
     {
       if (propertyValue.isBool())
-        progressRing.IsActive(propertyValue.asBool());
+        XamlDirectInstance::GetXamlDirect().SetBooleanProperty(progressRing, XD::XamlPropertyIndex::ProgressRing_IsActive, propertyValue.asBool());
       else if (pair.second.isNull())
-        progressRing.ClearValue(winrt::ProgressRing::IsActiveProperty());
+        XamlDirectInstance::GetXamlDirect().ClearProperty(progressRing, XD::XamlPropertyIndex::ProgressRing_IsActive);
     }
   }
 
