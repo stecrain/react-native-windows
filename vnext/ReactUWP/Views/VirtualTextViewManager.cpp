@@ -33,12 +33,12 @@ const char* VirtualTextViewManager::GetName() const
 
 XamlView VirtualTextViewManager::CreateViewCore(int64_t tag)
 {
-  return winrt::Span();
+  return XamlDirectInstance::GetXamlDirect().CreateInstance(XD::XamlTypeIndex::Span);
 }
 
 void VirtualTextViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly::dynamic& reactDiffMap)
 {
-  auto span = nodeToUpdate->GetView().as<winrt::Span>();
+  auto span = nodeToUpdate->GetView();
   if (span == nullptr)
     return;
 
@@ -49,15 +49,15 @@ void VirtualTextViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, cons
 
     // FUTURE: In the future cppwinrt will generate code where static methods on base types can
     // be called.  For now we specify the base type explicitly
-    if (TryUpdateForeground<winrt::TextElement>(span, propertyName, propertyValue))
+    if (TryUpdateForeground(span, propertyName, propertyValue))
     {
       continue;
     }
-    else if (TryUpdateFontProperties<winrt::TextElement>(span, propertyName, propertyValue))
+    else if (TryUpdateFontProperties(span, propertyName, propertyValue))
     {
       continue;
     }
-    else if (TryUpdateCharacterSpacing<winrt::TextElement>(span, propertyName, propertyValue))
+    else if (TryUpdateCharacterSpacing(span, propertyName, propertyValue, XD::XamlPropertyIndex::TextElement_CharacterSpacing))
     {
       continue;
     }
@@ -68,21 +68,20 @@ void VirtualTextViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, cons
 
 void VirtualTextViewManager::AddView(XamlView parent, XamlView child, int64_t index)
 {
-  auto span(parent.as<winrt::Span>());
-  auto childInline(child.as<winrt::Inline>());
-  span.Inlines().InsertAt(static_cast<uint32_t>(index), childInline);
+  auto inlines = XamlDirectInstance::GetXamlDirect().GetXamlDirectObjectProperty(parent, XD::XamlPropertyIndex::Span_Inlines);
+  XamlDirectInstance::GetXamlDirect().InsertIntoCollectionAt(inlines, static_cast<uint32_t>(index), child);
 }
 
 void VirtualTextViewManager::RemoveAllChildren(XamlView parent)
 {
-  auto span(parent.as<winrt::Span>());
-  span.Inlines().Clear();
+  auto inlines = XamlDirectInstance::GetXamlDirect().GetXamlDirectObjectProperty(parent, XD::XamlPropertyIndex::Span_Inlines);
+  XamlDirectInstance::GetXamlDirect().ClearCollection(inlines);
 }
 
 void VirtualTextViewManager::RemoveChildAt(XamlView parent, int64_t index)
 {
-  auto span(parent.as<winrt::Span>());
-  return span.Inlines().RemoveAt(static_cast<uint32_t>(index));
+  auto inlines = XamlDirectInstance::GetXamlDirect().GetXamlDirectObjectProperty(parent, XD::XamlPropertyIndex::Span_Inlines);
+  XamlDirectInstance::GetXamlDirect().RemoveFromCollectionAt(inlines, static_cast<uint32_t>(index));
 }
 
 bool VirtualTextViewManager::RequiresYogaNode() const
