@@ -42,20 +42,21 @@ void CheckBoxShadowNode::createView()
 {
   Super::createView();
 
-  auto checkbox = GetView().as<winrt::CheckBox>();
+  auto checkbox = GetView();
   auto wkinstance = GetViewManager()->GetReactInstance();
-  checkbox.Checked([=](auto&&, auto&&)
-  {
-    auto instance = wkinstance.lock();
-    if (!m_updating && instance != nullptr)
-      OnCheckedChanged(*instance, m_tag, true);
-  });
-  checkbox.Unchecked([=](auto&&, auto&&)
-  {
-    auto instance = wkinstance.lock();
-    if (!m_updating && instance != nullptr)
-      OnCheckedChanged(*instance, m_tag, false);
-  });
+  XamlDirectInstance::GetXamlDirect().AddEventHandler(checkbox, XD::XamlEventIndex::ToggleButton_Checked, winrt::box_value([=](auto&&, auto&&)
+    {
+      auto instance = wkinstance.lock();
+      if (!m_updating && instance != nullptr)
+        OnCheckedChanged(*instance, m_tag, true);
+    }));
+
+  XamlDirectInstance::GetXamlDirect().AddEventHandler(checkbox, XD::XamlEventIndex::ToggleButton_Unchecked, winrt::box_value([=](auto&&, auto&&)
+    {
+      auto instance = wkinstance.lock();
+      if (!m_updating && instance != nullptr)
+        OnCheckedChanged(*instance, m_tag, false);
+    }));
 }
 
 void CheckBoxShadowNode::updateProperties(const folly::dynamic&& props)
@@ -110,13 +111,12 @@ facebook::react::ShadowNode* CheckBoxViewManager::createShadow() const
 
 XamlView CheckBoxViewManager::CreateViewCore(int64_t tag)
 {
-  auto checkbox = winrt::CheckBox();
-  return checkbox;
+  return XamlDirectInstance::GetXamlDirect().CreateInstance(XD::XamlTypeIndex::CheckBox);
 }
 
 void CheckBoxViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly::dynamic& reactDiffMap)
 {
-  auto checkbox = nodeToUpdate->GetView().as<winrt::CheckBox>();
+  auto checkbox = nodeToUpdate->GetView();
   if (checkbox == nullptr)
     return;
 
@@ -128,16 +128,16 @@ void CheckBoxViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const f
    if (propertyName == "disabled")
    {
      if (propertyValue.isBool())
-       checkbox.IsEnabled(!propertyValue.asBool());
+       XamlDirectInstance::GetXamlDirect().SetBooleanProperty(checkbox, XD::XamlPropertyIndex::Control_IsEnabled, !propertyValue.asBool());
      else if (pair.second.isNull())
-       checkbox.ClearValue(winrt::Control::IsEnabledProperty());
+       XamlDirectInstance::GetXamlDirect().ClearProperty(checkbox, XD::XamlPropertyIndex::Control_IsEnabled);
    }
    else if (propertyName == "checked")
    {
      if (propertyValue.isBool())
-       checkbox.IsChecked(propertyValue.asBool());
+       XamlDirectInstance::GetXamlDirect().SetBooleanProperty(checkbox, XD::XamlPropertyIndex::ToggleButton_IsChecked, propertyValue.asBool());
      else if (pair.second.isNull())
-       checkbox.ClearValue(winrt::Primitives::ToggleButton::IsCheckedProperty());
+       XamlDirectInstance::GetXamlDirect().ClearProperty(checkbox, XD::XamlPropertyIndex::ToggleButton_IsChecked);
    }
   }
 
@@ -146,7 +146,7 @@ void CheckBoxViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const f
 
 void CheckBoxViewManager::DispatchCommand(XamlView viewToUpdate, int64_t commandId, const folly::dynamic& commandArgs)
 {
-  auto checkbox = viewToUpdate.as<winrt::CheckBox>();
+  auto checkbox = XamlDirectInstance::GetXamlDirect().GetObject(viewToUpdate).as<winrt::CheckBox>();
   if (checkbox == nullptr)
     return;
 

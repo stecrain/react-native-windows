@@ -34,7 +34,7 @@ folly::dynamic ControlViewManager::GetNativeProps() const
 
 void ControlViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly::dynamic& reactDiffMap)
 {
-  auto control(nodeToUpdate->GetView().as<winrt::Control>());
+  auto control(nodeToUpdate->GetView());
 
   bool implementsPadding = nodeToUpdate->ImplementsPadding();
 
@@ -67,11 +67,11 @@ void ControlViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const fo
         {
           auto tabIndex = propertyValue.asDouble();
           if (tabIndex == static_cast<int32_t>(tabIndex))
-            control.TabIndex(static_cast<int32_t>(tabIndex));
+            XamlDirectInstance::GetXamlDirect().SetInt32Property(control, XD::XamlPropertyIndex::Control_TabIndex, static_cast<int32_t>(tabIndex));
         }
         else if (propertyValue.isNull())
         {
-          control.ClearValue(winrt::Control::TabIndexProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(control, XD::XamlPropertyIndex::Control_TabIndex);
         }
       }
     }
