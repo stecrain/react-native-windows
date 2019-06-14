@@ -6,7 +6,7 @@
 #include <winrt/Windows.UI.Xaml.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
-#include <winrt/Windows.UI.Xaml.Core.Direct.h>
+#include <Utils/XamlDirectInstance.h>
 
 namespace react { namespace uwp {
 
@@ -79,7 +79,8 @@ private:
   bool m_propertiesChanged { false };
 
   // Child Elements
-  winrt::Windows::UI::Xaml::Controls::Border m_border { nullptr };
+  XD::IXamlDirectObject m_border{ nullptr };
+  //winrt::Windows::UI::Xaml::Controls::Border m_border { nullptr };
   bool m_hasOuterBorder;
 
 private:

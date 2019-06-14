@@ -187,6 +187,7 @@
     <ClInclude Include="Utils\LocalBundleReader.h" />
     <ClInclude Include="Utils\PropertyHandlerUtils.h" />
     <ClInclude Include="Utils\PropertyUtils.h" />
+    <ClInclude Include="Utils\XamlDirectInstance.h" />
     <ClInclude Include="Views\ActivityIndicatorViewManager.h" />
     <ClInclude Include="Views\CheckboxViewManager.h" />
     <ClInclude Include="Views\cppwinrt\react.uwp.DynamicAutomationPeer.g.h" />

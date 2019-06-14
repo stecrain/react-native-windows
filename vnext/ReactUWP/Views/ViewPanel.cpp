@@ -7,6 +7,7 @@
 
 #include <winrt/Windows.UI.Xaml.Interop.h>
 #include <winrt/Windows.Foundation.h>
+#include <Utils/XamlDirectInstance.h>
 
 namespace winrt
 {
@@ -151,20 +152,14 @@ ViewPanel::ViewPanel()
 
 /*static*/ void ViewPanel::SetTop(winrt::Windows::UI::Xaml::UIElement &element, double value)
 {
-  auto xamlDirect = winrt::XamlDirect::GetDefault();
-  auto direct = xamlDirect.GetXamlDirectObject(winrt::box_value(element));
-  xamlDirect.SetDoubleProperty(direct, winrt::XamlPropertyIndex::Canvas_Top, value);
-  /*element.SetValue(TopProperty(), winrt::box_value<double>(value));
-  element.InvalidateArrange();*/
+  auto direct = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(winrt::box_value(element));
+  XamlDirectInstance::GetXamlDirect().SetDoubleProperty(direct, winrt::XamlPropertyIndex::Canvas_Top, value);
 }
 
 /*static*/ void ViewPanel::SetLeft(winrt::Windows::UI::Xaml::UIElement &element, double value)
 {
-  auto xamlDirect = winrt::XamlDirect::GetDefault();
-  auto direct = xamlDirect.GetXamlDirectObject(winrt::box_value(element));
-  xamlDirect.SetDoubleProperty(direct, winrt::XamlPropertyIndex::Canvas_Left, value);
-  /*element.SetValue(LeftProperty(), winrt::box_value<double>(value));
-  element.InvalidateArrange();*/
+  auto direct = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(winrt::box_value(element));
+  XamlDirectInstance::GetXamlDirect().SetDoubleProperty(direct, winrt::XamlPropertyIndex::Canvas_Left, value);
 }
 
 winrt::Size ViewPanel::MeasureOverride(winrt::Size availableSize)
@@ -325,52 +320,47 @@ void ViewPanel::FinalizeProperties()
     // Ensure Border is created
     if (m_border == nullptr)
     {
-      m_border = winrt::Border();
+      m_border = XamlDirectInstance::GetXamlDirect().CreateInstance(XD::XamlTypeIndex::Border);
 
       // Add border as the top child if using as inner border
       if (scenario == Scenario::InnerBorder)
-        Children().Append(m_border);
+        Children().Append(XamlDirectInstance::GetXamlDirect().GetObject(m_border).as<winrt::UIElement>());
     }
 
     // TODO: Can Binding be used here?
     if (hasBorderBrush)
-      m_border.BorderBrush(BorderBrush());
+      XamlDirectInstance::GetXamlDirect().SetObjectProperty(m_border, XD::XamlPropertyIndex::Border_BorderBrush, winrt::box_value(BorderBrush()));
     else
-      m_border.ClearValue(winrt::Border::BorderBrushProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(m_border, XD::XamlPropertyIndex::Border_BorderBrush);
 
     if (hasBorderThickness)
-      m_border.BorderThickness(BorderThickness());
+      XamlDirectInstance::GetXamlDirect().SetThicknessProperty(m_border, XD::XamlPropertyIndex::Border_BorderThickness, BorderThickness());
     else
-      m_border.ClearValue(winrt::Border::BorderThicknessProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(m_border, XD::XamlPropertyIndex::Border_BorderThickness);
 
     if (hasCornerRadius)
-      m_border.CornerRadius(CornerRadius());
+      XamlDirectInstance::GetXamlDirect().SetCornerRadiusProperty(m_border, XD::XamlPropertyIndex::Border_CornerRadius, CornerRadius());
     else
-      m_border.ClearValue(winrt::Border::CornerRadiusProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(m_border, XD::XamlPropertyIndex::Border_CornerRadius);
   }
   else if (m_border != nullptr)
   {
     // Remove the Border element
-    Remove(m_border);
+    Remove(XamlDirectInstance::GetXamlDirect().GetObject(m_border).as<winrt::UIElement>());
     m_border = nullptr;
   }
 
   if (scenario == Scenario::OuterBorder)
   {
     if (hasBackground)
-      m_border.Background(Background());
+      XamlDirectInstance::GetXamlDirect().SetObjectProperty(m_border, XD::XamlPropertyIndex::Border_Background, winrt::box_value(Background()));
     else
-      m_border.ClearValue(winrt::Border::BackgroundProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(m_border, XD::XamlPropertyIndex::Border_Background);
 
     ClearValue(winrt::Panel::BackgroundProperty());
   }
   else
   {
-    // Set any background on this Panel
-    if (hasBackground)
-      SetValue(winrt::Panel::BackgroundProperty(), Background());
-    else
-      ClearValue(winrt::Panel::BackgroundProperty());
     // Set any background on this Panel
     if (hasBackground)
       SetValue(winrt::Panel::BackgroundProperty(), Background());
@@ -384,7 +374,7 @@ void ViewPanel::FinalizeProperties()
 winrt::Border ViewPanel::GetOuterBorder()
 {
   if (m_hasOuterBorder && (m_border != nullptr))
-    return m_border;
+    return XamlDirectInstance::GetXamlDirect().GetObject(m_border).as<winrt::Border>();
   else
     return winrt::Border(nullptr);
 }

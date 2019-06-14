@@ -438,6 +438,9 @@
     <ClInclude Include="Views\ScrollContentViewManager.h">
       <Filter>Views</Filter>
     </ClInclude>
+    <ClInclude Include="Utils\XamlDirectInstance.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="EndPoints\dll\react-native-uwp.arm.def">
