@@ -152,14 +152,18 @@ ViewPanel::ViewPanel()
 
 /*static*/ void ViewPanel::SetTop(winrt::Windows::UI::Xaml::UIElement &element, double value)
 {
-  auto direct = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(winrt::box_value(element));
-  XamlDirectInstance::GetXamlDirect().SetDoubleProperty(direct, winrt::XamlPropertyIndex::Canvas_Top, value);
+  /*auto direct = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(winrt::box_value(element));
+  XamlDirectInstance::GetXamlDirect().SetDoubleProperty(direct, winrt::XamlPropertyIndex::Canvas_Top, value);*/
+  element.SetValue(TopProperty(), winrt::box_value<double>(value));
+  element.InvalidateArrange();
 }
 
 /*static*/ void ViewPanel::SetLeft(winrt::Windows::UI::Xaml::UIElement &element, double value)
 {
-  auto direct = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(winrt::box_value(element));
-  XamlDirectInstance::GetXamlDirect().SetDoubleProperty(direct, winrt::XamlPropertyIndex::Canvas_Left, value);
+  /*auto direct = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(winrt::box_value(element));
+  XamlDirectInstance::GetXamlDirect().SetDoubleProperty(direct, winrt::XamlPropertyIndex::Canvas_Left, value);*/
+  element.SetValue(LeftProperty(), winrt::box_value<double>(value));
+  element.InvalidateArrange();
 }
 
 winrt::Size ViewPanel::MeasureOverride(winrt::Size availableSize)
@@ -371,12 +375,12 @@ void ViewPanel::FinalizeProperties()
   m_propertiesChanged = false;
 }
 
-winrt::Border ViewPanel::GetOuterBorder()
+XD::IXamlDirectObject ViewPanel::GetOuterBorder()
 {
   if (m_hasOuterBorder && (m_border != nullptr))
-    return XamlDirectInstance::GetXamlDirect().GetObject(m_border).as<winrt::Border>();
+    return m_border;
   else
-    return winrt::Border(nullptr);
+    return XD::IXamlDirectObject(nullptr);
 }
 
 void ViewPanel::UpdateClip(winrt::Size& finalSize)

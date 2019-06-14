@@ -33,7 +33,7 @@ public:
   void Clear() const;
 
   void FinalizeProperties();
-  winrt::Windows::UI::Xaml::Controls::Border GetOuterBorder();
+  XD::IXamlDirectObject GetOuterBorder();
 
   // Public Properties
   winrt::Windows::UI::Xaml::Media::Brush Background() { return GetValue(BackgroundProperty()).try_as<winrt::Windows::UI::Xaml::Media::Brush>(); }
