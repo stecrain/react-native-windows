@@ -21,5 +21,5 @@ public:
 
 private:
   XamlDirectInstance() {}
-  static XD::IXamlDirect m_xamlDirectInstance;
+  static inline XD::IXamlDirect m_xamlDirectInstance;
 };

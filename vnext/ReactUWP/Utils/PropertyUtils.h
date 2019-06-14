@@ -520,7 +520,7 @@ inline bool TryUpdateFlowDirection(const XD::IXamlDirectObject& element, const s
   return false;
 }
 
-inline bool TryUpdateCharacterSpacing(const XD::IXamlDirectObject& element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex& prop)
+inline bool TryUpdateCharacterSpacing(const XD::IXamlDirectObject& element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex prop)
 {
   if (propertyName == "letterSpacing" || propertyName == "characterSpacing")
   {

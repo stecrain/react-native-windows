@@ -48,22 +48,22 @@ void DatePickerShadowNode::createView()
 {
   Super::createView();
 
-  auto datePicker = GetView().as<winrt::CalendarDatePicker>();
+  auto datePicker = GetView();
   auto wkinstance = GetViewManager()->GetReactInstance();
 
-  datePicker.DateChanged([=](winrt::CalendarDatePicker /*picker*/, winrt::CalendarDatePickerDateChangedEventArgs args)
-  {
-    auto instance = wkinstance.lock();
-    if (!m_updating && instance != nullptr && args.NewDate() != nullptr)
-      OnDateChanged(*instance, m_tag, args.NewDate().Value());
-  });
+  XamlDirectInstance::GetXamlDirect().AddEventHandler(datePicker, XD::XamlEventIndex::CalendarDatePicker_DateChanged, winrt::box_value([=](winrt::CalendarDatePicker /*picker*/, winrt::CalendarDatePickerDateChangedEventArgs args)
+    {
+      auto instance = wkinstance.lock();
+      if (!m_updating && instance != nullptr && args.NewDate() != nullptr)
+        OnDateChanged(*instance, m_tag, args.NewDate().Value());
+    }));
 }
 
 void DatePickerShadowNode::updateProperties(const folly::dynamic&& props)
 {
   m_updating = true;
 
-  auto datePicker = GetView().as<winrt::CalendarDatePicker>();
+  auto datePicker = GetView();
   if (datePicker == nullptr)
     return;
 
@@ -79,20 +79,21 @@ void DatePickerShadowNode::updateProperties(const folly::dynamic&& props)
     if (propertyName == "dayOfWeekFormat")
     {
       if (propertyValue.isString())
-        datePicker.DayOfWeekFormat(asHstring(propertyValue));
+        XamlDirectInstance::GetXamlDirect().SetStringProperty(datePicker, XD::XamlPropertyIndex::CalendarDatePicker_DayOfWeekFormat, asHstring(propertyValue));
       else if (propertyValue.isNull())
-        datePicker.ClearValue(winrt::CalendarDatePicker::DayOfWeekFormatProperty());
+        XamlDirectInstance::GetXamlDirect().ClearProperty(datePicker, XD::XamlPropertyIndex::CalendarDatePicker_DayOfWeekFormat);
     }
     else if (propertyName == "dateFormat")
     {
       if (propertyValue.isString())
-        datePicker.DateFormat(asHstring(propertyValue));
+        XamlDirectInstance::GetXamlDirect().SetStringProperty(datePicker, XD::XamlPropertyIndex::CalendarDatePicker_DateFormat, asHstring(propertyValue));
       else if (propertyValue.isNull())
-        datePicker.ClearValue(winrt::CalendarDatePicker::DateFormatProperty());
+        XamlDirectInstance::GetXamlDirect().ClearProperty(datePicker, XD::XamlPropertyIndex::CalendarDatePicker_DateFormat);
     }
     else if (propertyName == "firstDayOfWeek")
     {
       if (propertyValue.isNumber())
+        XamlDirectInstance::GetXamlDirect()
         datePicker.FirstDayOfWeek(static_cast<winrt::DayOfWeek>(static_cast<int64_t>(propertyValue.asDouble())));
       else if (propertyValue.isNull())
         datePicker.ClearValue(winrt::CalendarDatePicker::FirstDayOfWeekProperty());
@@ -210,8 +211,7 @@ facebook::react::ShadowNode* DatePickerViewManager::createShadow() const
 
 XamlView DatePickerViewManager::CreateViewCore(int64_t tag)
 {
-  auto datePicker = winrt::CalendarDatePicker();
-  return datePicker;
+  return XamlDirectInstance::GetXamlDirect().CreateInstance(XD::XamlTypeIndex::CalendarDatePicker);
 }
 
 YGMeasureFunc DatePickerViewManager::GetYogaCustomMeasureFunc() const
