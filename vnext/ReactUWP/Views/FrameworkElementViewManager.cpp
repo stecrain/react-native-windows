@@ -30,17 +30,17 @@ FrameworkElementViewManager::FrameworkElementViewManager(const std::shared_ptr<I
 {
 }
 
-void FrameworkElementViewManager::TransferProperty(XamlView oldView, XamlView newView, winrt::DependencyProperty dp)
+void FrameworkElementViewManager::TransferDoubleProperty(XamlView oldView, XamlView newView, XD::XamlPropertyIndex prop)
 {
-  auto oldValue = oldView.ReadLocalValue(dp);
-  if (oldValue != nullptr)
-    newView.SetValue(dp, oldValue);
+  auto oldValue = XamlDirectInstance::GetXamlDirect().GetDoubleProperty(oldView, prop);
+  if (oldValue != 0)
+    XamlDirectInstance::GetXamlDirect().SetDoubleProperty(newView, prop, oldValue);
 }
 
 void FrameworkElementViewManager::TransferProperties(XamlView oldView, XamlView newView)
 {
   // Render Properties
-  TransferProperty(oldView, newView, winrt::UIElement::OpacityProperty());
+  TransferDoubleProperty(oldView, newView, XD::XamlPropertyIndex::UIElement_Opacity);
 
   if (oldView.try_as<winrt::IUIElement9>())
   {
@@ -50,22 +50,26 @@ void FrameworkElementViewManager::TransferProperties(XamlView oldView, XamlView 
   }
 
   // Layout Properties
-  TransferProperty(oldView, newView, winrt::FrameworkElement::WidthProperty());
-  TransferProperty(oldView, newView, winrt::FrameworkElement::HeightProperty());
-  TransferProperty(oldView, newView, winrt::FrameworkElement::MinWidthProperty());
-  TransferProperty(oldView, newView, winrt::FrameworkElement::MinHeightProperty());
-  TransferProperty(oldView, newView, winrt::FrameworkElement::MaxWidthProperty());
-  TransferProperty(oldView, newView, winrt::FrameworkElement::MaxHeightProperty());
+  TransferDoubleProperty(oldView, newView, XD::XamlPropertyIndex::FrameworkElement_Width);
+  TransferDoubleProperty(oldView, newView, XD::XamlPropertyIndex::FrameworkElement_Height);
+  TransferDoubleProperty(oldView, newView, XD::XamlPropertyIndex::FrameworkElement_MinWidth);
+  TransferDoubleProperty(oldView, newView, XD::XamlPropertyIndex::FrameworkElement_MinHeight);
+  TransferDoubleProperty(oldView, newView, XD::XamlPropertyIndex::FrameworkElement_MaxWidth);
+  TransferDoubleProperty(oldView, newView, XD::XamlPropertyIndex::FrameworkElement_MaxHeight);
 
   // Accessibility Properties
-  TransferProperty(oldView, newView, winrt::AutomationProperties::NameProperty());
-  TransferProperty(oldView, newView, winrt::AutomationProperties::LiveSettingProperty());
-  auto accessibilityView = winrt::AutomationProperties::GetAccessibilityView(oldView);
-  winrt::AutomationProperties::SetAccessibilityView(newView, accessibilityView);
+  auto oldName = XamlDirectInstance::GetXamlDirect().GetStringProperty(oldView, XD::XamlPropertyIndex::AutomationProperties_Name);
+  XamlDirectInstance::GetXamlDirect().SetStringProperty(newView, XD::XamlPropertyIndex::AutomationProperties_Name, oldName);
 
-  auto tooltip = winrt::ToolTipService::GetToolTip(oldView);
-  oldView.ClearValue(winrt::ToolTipService::ToolTipProperty());
-  winrt::ToolTipService::SetToolTip(newView, tooltip);
+  auto oldLiveSetting = XamlDirectInstance::GetXamlDirect().GetEnumProperty(oldView, XD::XamlPropertyIndex::AutomationProperties_LiveSetting);
+  XamlDirectInstance::GetXamlDirect().SetEnumProperty(newView, XD::XamlPropertyIndex::AutomationProperties_LiveSetting, oldLiveSetting);
+
+  auto oldAccessibilityView = XamlDirectInstance::GetXamlDirect().GetEnumProperty(oldView, XD::XamlPropertyIndex::AutomationProperties_AccessibilityView);
+  XamlDirectInstance::GetXamlDirect().SetEnumProperty(newView, XD::XamlPropertyIndex::AutomationProperties_AccessibilityView, oldAccessibilityView);
+
+  auto toolTip = XamlDirectInstance::GetXamlDirect().GetStringProperty(oldView, XD::XamlPropertyIndex::ToolTipService_ToolTip);
+  XamlDirectInstance::GetXamlDirect().ClearProperty(oldView, XD::XamlPropertyIndex::ToolTipService_ToolTip);
+  XamlDirectInstance::GetXamlDirect().SetStringProperty(newView, XD::XamlPropertyIndex::ToolTipService_ToolTip, toolTip);
 }
 
 folly::dynamic FrameworkElementViewManager::GetNativeProps() const
