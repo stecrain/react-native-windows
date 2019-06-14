@@ -67,9 +67,9 @@ void FrameworkElementViewManager::TransferProperties(XamlView oldView, XamlView 
   auto oldAccessibilityView = XamlDirectInstance::GetXamlDirect().GetEnumProperty(oldView, XD::XamlPropertyIndex::AutomationProperties_AccessibilityView);
   XamlDirectInstance::GetXamlDirect().SetEnumProperty(newView, XD::XamlPropertyIndex::AutomationProperties_AccessibilityView, oldAccessibilityView);
 
-  auto toolTip = XamlDirectInstance::GetXamlDirect().GetStringProperty(oldView, XD::XamlPropertyIndex::ToolTipService_ToolTip);
+  auto toolTip = XamlDirectInstance::GetXamlDirect().GetObjectProperty(oldView, XD::XamlPropertyIndex::ToolTipService_ToolTip);
   XamlDirectInstance::GetXamlDirect().ClearProperty(oldView, XD::XamlPropertyIndex::ToolTipService_ToolTip);
-  XamlDirectInstance::GetXamlDirect().SetStringProperty(newView, XD::XamlPropertyIndex::ToolTipService_ToolTip, toolTip);
+  XamlDirectInstance::GetXamlDirect().SetObjectProperty(newView, XD::XamlPropertyIndex::ToolTipService_ToolTip, toolTip);
 }
 
 folly::dynamic FrameworkElementViewManager::GetNativeProps() const
@@ -87,7 +87,7 @@ folly::dynamic FrameworkElementViewManager::GetNativeProps() const
 
 void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly::dynamic& reactDiffMap)
 {
-  auto element(nodeToUpdate->GetView().as<winrt::FrameworkElement>());
+  auto element(nodeToUpdate->GetView());
   if (element != nullptr)
   {
     for (const auto& pair : reactDiffMap.items())
@@ -101,13 +101,13 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
         {
           double opacity = propertyValue.asDouble();
           if (opacity >= 0 && opacity <= 1)
-            element.Opacity(opacity);
+            XamlDirectInstance::GetXamlDirect().SetDoubleProperty(element, XD::XamlPropertyIndex::UIElement_Opacity, opacity);
           // else
           // TODO report error
         }
         else if (propertyValue.isNull())
         {
-          element.ClearValue(winrt::UIElement::OpacityProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(element, XD::XamlPropertyIndex::UIElement_Opacity);
           continue;
         }
       }
@@ -135,11 +135,11 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
             transformMatrix.m42 = static_cast<float>(propertyValue[13].asDouble());
             transformMatrix.m43 = static_cast<float>(propertyValue[14].asDouble());
             transformMatrix.m44 = static_cast<float>(propertyValue[15].asDouble());
-            element.TransformMatrix(transformMatrix);
+            XamlDirectInstance::GetXamlDirect().SetObjectProperty(element, XD::XamlPropertyIndex::UIElement_TransformMatrix, winrt::box_value(transformMatrix));
           }
           else if (propertyValue.isNull())
           {
-            element.TransformMatrix(winrt::Windows::Foundation::Numerics::float4x4::identity());
+            XamlDirectInstance::GetXamlDirect().SetObjectProperty(element, XD::XamlPropertyIndex::UIElement_TransformMatrix, winrt::box_value(winrt::Windows::Foundation::Numerics::float4x4::identity()));
           }
         }
       }
@@ -149,13 +149,13 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
         {
           double width = propertyValue.asDouble();
           if (width >= 0)
-            element.Width(width);
+            XamlDirectInstance::GetXamlDirect().SetDoubleProperty(element, XD::XamlPropertyIndex::FrameworkElement_Width, width);
           // else
           // TODO report error
         }
         else if (propertyValue.isNull())
         {
-          element.ClearValue(winrt::FrameworkElement::WidthProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(element, XD::XamlPropertyIndex::FrameworkElement_Width);
           continue;
         }
 
@@ -166,13 +166,13 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
         {
           double height = propertyValue.asDouble();
           if (height >= 0)
-            element.Height(height);
+            XamlDirectInstance::GetXamlDirect().SetDoubleProperty(element, XD::XamlPropertyIndex::FrameworkElement_Height, height);
           // else
           // TODO report error
         }
         else if (propertyValue.isNull())
         {
-          element.ClearValue(winrt::FrameworkElement::HeightProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(element, XD::XamlPropertyIndex::FrameworkElement_Height);
           continue;
         }
       }
@@ -182,13 +182,13 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
         {
           double minWidth = propertyValue.asDouble();
           if (minWidth >= 0)
-            element.MinWidth(minWidth);
+            XamlDirectInstance::GetXamlDirect().SetDoubleProperty(element, XD::XamlPropertyIndex::FrameworkElement_MinWidth, minWidth);
           // else
           // TODO report error
         }
         else if (propertyValue.isNull())
         {
-          element.ClearValue(winrt::FrameworkElement::MinWidthProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(element, XD::XamlPropertyIndex::FrameworkElement_MinWidth);
           continue;
         }
       }
@@ -198,13 +198,13 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
         {
           double maxWidth = propertyValue.asDouble();
           if (maxWidth >= 0)
-            element.MaxWidth(maxWidth);
+            XamlDirectInstance::GetXamlDirect().SetDoubleProperty(element, XD::XamlPropertyIndex::FrameworkElement_MaxWidth, maxWidth);
           // else
           // TODO report error
         }
         else if (propertyValue.isNull())
         {
-          element.ClearValue(winrt::FrameworkElement::MaxWidthProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(element, XD::XamlPropertyIndex::FrameworkElement_MaxWidth);
           continue;
         }
 
@@ -215,13 +215,13 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
         {
           double minHeight = propertyValue.asDouble();
           if (minHeight >= 0)
-            element.MinHeight(minHeight);
+            XamlDirectInstance::GetXamlDirect().SetDoubleProperty(element, XD::XamlPropertyIndex::FrameworkElement_MinHeight, minHeight);
           // else
           // TODO report error
         }
         else if (propertyValue.isNull())
         {
-          element.ClearValue(winrt::FrameworkElement::MinHeightProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(element, XD::XamlPropertyIndex::FrameworkElement_MinHeight);
           continue;
         }
       }
@@ -231,13 +231,13 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
         {
           double maxHeight = propertyValue.asDouble();
           if (maxHeight >= 0)
-            element.MaxHeight(maxHeight);
+            XamlDirectInstance::GetXamlDirect().SetDoubleProperty(element, XD::XamlPropertyIndex::FrameworkElement_MaxHeight, maxHeight);
           // else
           // TODO report error
         }
         else if (propertyValue.isNull())
         {
-          element.ClearValue(winrt::FrameworkElement::MaxHeightProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(element, XD::XamlPropertyIndex::FrameworkElement_MaxHeight);
           continue;
         }
 
@@ -247,13 +247,11 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
         if (propertyValue.isString())
         {
           auto value = react::uwp::asHstring(propertyValue);
-          auto boxedValue = winrt::Windows::Foundation::PropertyValue::CreateString(value);
-
-          element.SetValue(winrt::AutomationProperties::HelpTextProperty(), boxedValue);
+          XamlDirectInstance::GetXamlDirect().SetStringProperty(element, XD::XamlPropertyIndex::AutomationProperties_HelpText, value);
         }
         else if (propertyValue.isNull())
         {
-          element.ClearValue(winrt::AutomationProperties::HelpTextProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(element, XD::XamlPropertyIndex::AutomationProperties_HelpText);
         }
       }
       else if (propertyName == "accessibilityLabel")
@@ -261,22 +259,20 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
         if (propertyValue.isString())
         {
           auto value = react::uwp::asHstring(propertyValue);
-          auto boxedValue = winrt::Windows::Foundation::PropertyValue::CreateString(value);
-
-          element.SetValue(winrt::AutomationProperties::NameProperty(), boxedValue);
+          XamlDirectInstance::GetXamlDirect().SetStringProperty(element, XD::XamlPropertyIndex::AutomationProperties_Name, value);
         }
         else if (propertyValue.isNull())
         {
-          element.ClearValue(winrt::AutomationProperties::NameProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(element, XD::XamlPropertyIndex::AutomationProperties_Name);
         }
-        AnnounceLiveRegionChangedIfNeeded(element);
+        AnnounceLiveRegionChangedIfNeeded(XamlDirectInstance::GetXamlDirect().GetObject(element).as<winrt::FrameworkElement>());
       }
       else if (propertyName == "accessible")
       {
         if (propertyValue.isBool())
         {
           if (!propertyValue.asBool())
-            winrt::AutomationProperties::SetAccessibilityView(element, winrt::Peers::AccessibilityView::Raw);
+            XamlDirectInstance::GetXamlDirect().SetEnumProperty(element, XD::XamlPropertyIndex::AutomationProperties_AccessibilityView, static_cast<uint32_t>(winrt::Peers::AccessibilityView::Raw));
         }
       }
       else if (propertyName == "accessibilityLiveRegion")
@@ -296,26 +292,25 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
             liveSetting = winrt::AutomationLiveSetting::Assertive;
           }
 
-          element.SetValue(winrt::AutomationProperties::LiveSettingProperty(), winrt::box_value(liveSetting));
+          XamlDirectInstance::GetXamlDirect().SetEnumProperty(element, XD::XamlPropertyIndex::AutomationProperties_LiveSetting, static_cast<uint32_t>(liveSetting));
         }
         else if (propertyValue.isNull())
         {
-          element.ClearValue(winrt::AutomationProperties::LiveSettingProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(element, XD::XamlPropertyIndex::AutomationProperties_LiveSetting);
         }
-        AnnounceLiveRegionChangedIfNeeded(element);
+        AnnounceLiveRegionChangedIfNeeded(XamlDirectInstance::GetXamlDirect().GetObject(element).as<winrt::FrameworkElement>());
       }
       else if (propertyName == "testID")
       {
         if (propertyValue.isString())
         {
           auto value = react::uwp::asHstring(propertyValue);
-          auto boxedValue = winrt::Windows::Foundation::PropertyValue::CreateString(value);
-
-          element.SetValue(winrt::AutomationProperties::AutomationIdProperty(), boxedValue);
+          XamlDirectInstance::GetXamlDirect().SetStringProperty(element, XD::XamlPropertyIndex::AutomationProperties_AutomationId, value);
         }
         else if (propertyValue.isNull())
         {
-          element.ClearValue(winrt::AutomationProperties::AutomationIdProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(element, XD::XamlPropertyIndex::AutomationProperties_AutomationId);
+
         }
       }
       else if (propertyName == "tooltip")
@@ -324,7 +319,7 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
         {
           winrt::TextBlock tooltip = winrt::TextBlock();
           tooltip.Text(asHstring(propertyValue));
-          winrt::ToolTipService::SetToolTip(element, tooltip);
+          XamlDirectInstance::GetXamlDirect().SetObjectProperty(element, XD::XamlPropertyIndex::ToolTipService_ToolTip, winrt::box_value(tooltip));
         }
       }
       else if (propertyName == "zIndex")
@@ -332,13 +327,11 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
         if (propertyValue.isNumber())
         {
           auto value = static_cast<int>(propertyValue.asDouble());
-          auto boxedValue = winrt::Windows::Foundation::PropertyValue::CreateInt32(value);
-
-          element.SetValue(winrt::Canvas::ZIndexProperty(), boxedValue);
+          XamlDirectInstance::GetXamlDirect().SetInt32Property(element, XD::XamlPropertyIndex::Canvas_ZIndex, value);
         }
         else if (propertyValue.isNull())
         {
-          element.ClearValue(winrt::Canvas::ZIndexProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(element, XD::XamlPropertyIndex::Canvas_ZIndex);
         }
       }
       else if (TryUpdateFlowDirection(element, propertyName, propertyValue))
