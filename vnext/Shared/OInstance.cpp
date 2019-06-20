@@ -411,11 +411,16 @@ InstanceImpl::InstanceImpl(std::string&& jsBundleBasePath,
       
       if (!m_devSettings->useJITCompilation)
       {
-#if (defined(_MSC_VER) && !defined(WINRT))
-        instanceArgs.RuntimeAttributes = static_cast<JsRuntimeAttributes>(instanceArgs.RuntimeAttributes | JsRuntimeAttributeDisableNativeCodeGeneration | JsRuntimeAttributeDisableExecutablePageAllocation);
-#else
-        instanceArgs.RuntimeAttributes = static_cast<JsRuntimeAttributes>(instanceArgs.RuntimeAttributes | JsRuntimeAttributeDisableNativeCodeGeneration);
+        instanceArgs.RuntimeAttributes = static_cast<JsRuntimeAttributes>(
+          instanceArgs.RuntimeAttributes
+          | JsRuntimeAttributeDisableNativeCodeGeneration
+          // When Chakra Allocates Executable code pages tools like WPA will be able to display the javascript functions in CPU samples.
+          // Very useful CPU profiles can be gathered by executing bytecode that is generated from a non-minified bundle (with dev=false).
+          // Use react.overrides.props to set the preprocesor PROFILE_JS
+#ifndef PROFILE_JS
+          | JsRuntimeAttributeDisableExecutablePageAllocation
 #endif
+          );
       }
 
       instanceArgs.MemoryTracker = m_devSettings->memoryTracker ? m_devSettings->memoryTracker : CreateMemoryTracker(std::shared_ptr<MessageQueueThread>{m_nativeQueue});
