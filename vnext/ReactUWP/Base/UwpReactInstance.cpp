@@ -144,7 +144,7 @@ std::vector<facebook::react::NativeModuleDescription> GetModules(
   modules.emplace_back(
     "UIManager",
     [uiManager = std::move(uiManager)]() { return facebook::react::createBatchingUIManagerModule(uiManager); },
-    messageQueue);
+    std::make_shared<WorkerMessageQueueThread>());
 
   modules.emplace_back(
     react::uwp::WebSocketModule::name,
