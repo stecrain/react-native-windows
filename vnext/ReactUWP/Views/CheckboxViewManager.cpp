@@ -12,11 +12,13 @@
 
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Controls.Primitives.h>
+#include <winrt/Windows.UI.Xaml.Core.Direct.h>
 
 
 namespace winrt {
   using namespace Windows::UI::Xaml;
   using namespace Windows::UI::Xaml::Controls;
+  using namespace Windows::UI::Xaml::Core::Direct;
 }
 
 namespace react { namespace uwp {
@@ -106,6 +108,8 @@ void CheckBoxViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const f
   if (checkbox == nullptr)
     return;
 
+  auto checkboxXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(checkbox);
+
   for (const auto& pair : reactDiffMap.items())
   {
     const std::string& propertyName = pair.first.getString();
@@ -114,16 +118,34 @@ void CheckBoxViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const f
    if (propertyName == "disabled")
    {
      if (propertyValue.isBool())
-       checkbox.IsEnabled(!propertyValue.asBool());
+       XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+         checkboxXD,
+         winrt::XamlPropertyIndex::Control_IsEnabled,
+         !propertyValue.asBool()
+       );
+       //checkbox.IsEnabled(!propertyValue.asBool());
      else if (pair.second.isNull())
-       checkbox.ClearValue(winrt::Control::IsEnabledProperty());
+       XamlDirectInstance::GetXamlDirect().ClearProperty(
+         checkboxXD,
+         winrt::XamlPropertyIndex::Control_IsEnabled
+       );
+       //checkbox.ClearValue(winrt::Control::IsEnabledProperty());
    }
    else if (propertyName == "checked")
    {
      if (propertyValue.isBool())
-       checkbox.IsChecked(propertyValue.asBool());
+       XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+         checkboxXD,
+         winrt::XamlPropertyIndex::ToggleButton_IsChecked,
+         propertyValue.asBool()
+       );
+       //checkbox.IsChecked(propertyValue.asBool());
      else if (pair.second.isNull())
-       checkbox.ClearValue(winrt::Primitives::ToggleButton::IsCheckedProperty());
+       XamlDirectInstance::GetXamlDirect().ClearProperty(
+         checkboxXD,
+         winrt::XamlPropertyIndex::ToggleButton_IsChecked
+       );
+       //checkbox.ClearValue(winrt::Primitives::ToggleButton::IsCheckedProperty());
    }
   }
 

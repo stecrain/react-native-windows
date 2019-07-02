@@ -9,9 +9,11 @@
 #include <Utils/ValueUtils.h>
 
 #include <winrt/Windows.UI.Xaml.Controls.h>
+#include <winrt/Windows.UI.Xaml.Core.Direct.h>
 
 namespace winrt {
   using namespace Windows::UI::Xaml::Controls;
+  using namespace Windows::UI::Xaml::Core::Direct;
 }
 
 namespace react { namespace uwp {
@@ -50,6 +52,8 @@ void ActivityIndicatorViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate
   if (progressRing == nullptr)
     return;
 
+  auto progressRingXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(progressRing);
+
   for (const auto& pair : reactDiffMap.items())
   {
     const std::string& propertyName = pair.first.getString();
@@ -58,9 +62,18 @@ void ActivityIndicatorViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate
     if (propertyName == "animating")
     {
       if (propertyValue.isBool())
-        progressRing.IsActive(propertyValue.asBool());
+        XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+          progressRingXD,
+          winrt::XamlPropertyIndex::ProgressRing_IsActive,
+          propertyValue.asBool()
+        );
+        //progressRing.IsActive(propertyValue.asBool());
       else if (pair.second.isNull())
-        progressRing.ClearValue(winrt::ProgressRing::IsActiveProperty());
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          progressRingXD,
+          winrt::XamlPropertyIndex::ProgressRing_IsActive
+        );
+        //progressRing.ClearValue(winrt::ProgressRing::IsActiveProperty());
     }
   }
 

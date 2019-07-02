@@ -251,6 +251,7 @@
     <ClInclude Include="Views\ViewViewManager.h" />
     <ClInclude Include="Views\VirtualTextViewManager.h" />
     <ClInclude Include="Views\WebViewManager.h" />
+    <ClInclude Include="XamlDirectInstance.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Shared\AsyncStorageModule.cpp" />
@@ -359,6 +360,7 @@
     <ClCompile Include="Views\WebViewManager.cpp" />
     <ClCompile Include="Views\module.g.cpp" />
     <ClCompile Include="Views\KeyboardEventHandler.cpp" />
+    <ClCompile Include="XamlDirectInstance.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\makewinrt.inc" />
