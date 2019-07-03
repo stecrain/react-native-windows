@@ -7,6 +7,7 @@
 #include <winrt/Windows.UI.Xaml.Automation.Peers.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
+#include <XamlDirectInstance.h>
 
 #include "cppwinrt/ViewPanel.g.h"
 
