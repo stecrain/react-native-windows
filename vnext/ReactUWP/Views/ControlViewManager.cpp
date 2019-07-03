@@ -10,10 +10,12 @@
 
 #include <winrt/Windows.UI.Xaml.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
+#include <winrt/Windows.UI.Xaml.Core.Direct.h>
 
 namespace winrt {
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
+using namespace Windows::UI::Xaml::Core::Direct;
 }
 
 namespace react { namespace uwp {
@@ -44,20 +46,21 @@ void ControlViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const fo
     {
       const std::string& propertyName = pair.first.getString();
       const folly::dynamic& propertyValue = pair.second;
+      auto borderPropXD = propertyName == "borderColor" ? winrt::XamlPropertyIndex::Control_BorderBrush : winrt::XamlPropertyIndex::Control_BorderThickness;
 
-      if (TryUpdateBackgroundBrush(control, propertyName, propertyValue))
+      if (TryUpdateBackgroundBrush(control, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_Background))
       {
         continue;
       }
-      else if (TryUpdateBorderProperties(nodeToUpdate, control, propertyName, propertyValue))
+      else if (TryUpdateBorderProperties(nodeToUpdate, control, propertyName, propertyValue, borderPropXD))
       {
         continue;
       }
-      else if (TryUpdateForeground(control, propertyName, propertyValue))
+      else if (TryUpdateForeground(control, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_Foreground))
       {
         continue;
       }
-      else if (implementsPadding && TryUpdatePadding(nodeToUpdate, control, propertyName, propertyValue))
+      else if (implementsPadding && TryUpdatePadding(nodeToUpdate, control, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_Padding))
       {
         continue;
       }

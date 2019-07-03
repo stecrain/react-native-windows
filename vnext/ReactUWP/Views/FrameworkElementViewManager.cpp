@@ -446,7 +446,7 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
           XamlDirectInstance::GetXamlDirect().ClearProperty(elementXD, winrt::XamlPropertyIndex::Canvas_ZIndex);
         }
       }
-      else if (TryUpdateFlowDirection(element, propertyName, propertyValue))
+      else if (TryUpdateFlowDirection(element, propertyName, propertyValue, winrt::XamlPropertyIndex::FrameworkElement_FlowDirection))
       {
         continue;
       }

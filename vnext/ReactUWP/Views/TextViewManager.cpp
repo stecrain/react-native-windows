@@ -68,7 +68,7 @@ void TextViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
     const std::string& propertyName = pair.first.getString();
     const folly::dynamic& propertyValue = pair.second;
 
-    if (TryUpdateForeground(textBlock, propertyName, propertyValue))
+    if (TryUpdateForeground(textBlock, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_Foreground))
     {
       continue;
     }
@@ -76,23 +76,23 @@ void TextViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
     {
       continue;
     }
-    else if (TryUpdatePadding(nodeToUpdate, textBlock, propertyName, propertyValue))
+    else if (TryUpdatePadding(nodeToUpdate, textBlock, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_Padding))
     {
       continue;
     }
-    else if (TryUpdateTextAlignment(textBlock, propertyName, propertyValue))
+    else if (TryUpdateTextAlignment(textBlock, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_TextAlignment))
     {
       continue;
     }
-    else if (TryUpdateTextTrimming(textBlock, propertyName, propertyValue))
+    else if (TryUpdateTextTrimming(textBlock, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_TextTrimming))
     {
       continue;
     }
-    else if (TryUpdateTextDecorationLine(textBlock, propertyName, propertyValue))
+    else if (TryUpdateTextDecorationLine(textBlock, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_TextDecorations))
     {
       continue;
     }
-    else if (TryUpdateCharacterSpacing(textBlock, propertyName, propertyValue))
+    else if (TryUpdateCharacterSpacing(textBlock, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_CharacterSpacing))
     {
       continue;
     }

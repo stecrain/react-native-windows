@@ -17,12 +17,14 @@
 #include <winrt/Windows.UI.Text.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Input.h>
+#include <winrt/Windows.UI.Xaml.Core.Direct.h>
 
 namespace winrt {
 using namespace Windows::Foundation;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Input;
+using namespace Windows::UI::Xaml::Core::Direct;
 }
 
 namespace react {
@@ -223,11 +225,11 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
     {
       continue;
     }
-    else if (TryUpdateTextAlignment(textBox, propertyName, propertyValue))
+    else if (TryUpdateTextAlignment(textBox, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBox_TextAlignment))
     {
       continue;
     }
-    else if (TryUpdateCharacterSpacing(control, propertyName, propertyValue))
+    else if (TryUpdateCharacterSpacing(control, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_CharacterSpacing))
     {
       continue;
     }
