@@ -14,11 +14,12 @@
 #include <winrt/Windows.Foundation.Metadata.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Controls.Primitives.h>
-
+#include <winrt/Windows.UI.Xaml.Core.Direct.h>
 
 namespace winrt {
   using namespace Windows::UI::Xaml;
   using namespace Windows::UI::Xaml::Controls;
+  using namespace Windows::UI::Xaml::Core::Direct;
 }
 
 namespace react { namespace uwp {
@@ -90,6 +91,9 @@ void PickerShadowNode::updateProperties(const folly::dynamic&& props)
 
   bool updateSelectedIndex = false;
   auto combobox = GetView().as<winrt::ComboBox>();
+
+  auto comboboxXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(combobox);
+
   for (auto& pair : props.items())
   {
     const std::string& propertyName = pair.first.getString();
@@ -100,9 +104,18 @@ void PickerShadowNode::updateProperties(const folly::dynamic&& props)
       if (m_isEditableComboboxSupported)
       {
         if (propertyValue.isBool())
-          combobox.IsEditable(propertyValue.asBool());
+          //combobox.IsEditable(propertyValue.asBool());
+          XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+            comboboxXD,
+            winrt::XamlPropertyIndex::ComboBox_IsEditable,
+            propertyValue.asBool()
+          );
         else if (propertyValue.isNull())
-          combobox.ClearValue(winrt::ComboBox::IsEditableProperty());
+          //combobox.ClearValue(winrt::ComboBox::IsEditableProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(
+            comboboxXD,
+            winrt::XamlPropertyIndex::ComboBox_IsEditable
+          );
       }
     }
     else if (propertyName == "text")
@@ -110,15 +123,29 @@ void PickerShadowNode::updateProperties(const folly::dynamic&& props)
       if (m_isEditableComboboxSupported)
       {
         if (propertyValue.isString())
-          combobox.Text(asHstring(propertyValue));
+          //combobox.Text(asHstring(propertyValue));
+          XamlDirectInstance::GetXamlDirect().SetStringProperty(
+            comboboxXD,
+            winrt::XamlPropertyIndex::ComboBox_Text,
+            asHstring(propertyValue)
+          );
         else if (propertyValue.isNull())
-          combobox.ClearValue(winrt::ComboBox::TextProperty());
+          //combobox.ClearValue(winrt::ComboBox::TextProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(
+            comboboxXD,
+            winrt::XamlPropertyIndex::ComboBox_Text
+          );
       }
     }
     else if (propertyName == "enabled")
     {
       if (propertyValue.isBool())
-        combobox.IsEnabled(propertyValue.asBool());
+        //combobox.IsEnabled(propertyValue.asBool());
+        XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+          comboboxXD,
+          winrt::XamlPropertyIndex::Control_IsEnabled,
+          propertyValue.asBool()
+        );
     }
     else if (propertyName == "selectedIndex")
     {
@@ -144,7 +171,12 @@ void PickerShadowNode::updateProperties(const folly::dynamic&& props)
 
   // Update selectedIndex last, in case items and selectedIndex were both changing
   if (updateSelectedIndex)
-    combobox.SelectedIndex(m_selectedIndex);
+    //combobox.SelectedIndex(m_selectedIndex);
+    XamlDirectInstance::GetXamlDirect().SetInt32Property(
+      comboboxXD,
+      winrt::XamlPropertyIndex::Selector_SelectedIndex,
+      m_selectedIndex
+    );
 
   Super::updateProperties(std::move(props));
   m_updating = false;
@@ -153,24 +185,55 @@ void PickerShadowNode::updateProperties(const folly::dynamic&& props)
 void PickerShadowNode::RepopulateItems()
 {
   auto combobox = GetView().as<winrt::ComboBox>();
+  //auto comboBoxItems = combobox.Items();
+  //comboBoxItems.Clear();
 
-  auto comboBoxItems = combobox.Items();
-  comboBoxItems.Clear();
+  auto comboboxXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(combobox);
+  auto comboboxItemsXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObjectProperty(comboboxXD, winrt::XamlPropertyIndex::ItemsControl_Items);
+  XamlDirectInstance::GetXamlDirect().ClearCollection(comboboxItemsXD);
+
   for (const auto& item : m_items)
   {
     if (item.count("label"))
     {
       std::string label = item["label"].asString();
-      auto comboboxItem = winrt::ComboBoxItem();
+
+      /*auto comboboxItem = winrt::ComboBoxItem();
       comboboxItem.Content(winrt::box_value(facebook::react::unicode::utf8ToUtf16(label)));
       if (item.count("textColor"))
         comboboxItem.Foreground(BrushFrom(item["textColor"]));
-      comboBoxItems.Append(comboboxItem);
+      comboBoxItems.Append(comboboxItem);*/
+
+      auto comboboxItem = XamlDirectInstance::GetXamlDirect().CreateInstance(winrt::XamlTypeIndex::ComboBoxItem);      
+
+      XamlDirectInstance::GetXamlDirect().SetStringProperty(
+        comboboxItem,
+        winrt::XamlPropertyIndex::ContentControl_Content,
+        facebook::react::unicode::utf8ToUtf16(label)
+      );
+      if (item.count("textColor"))
+      {
+          auto brush = BrushFrom(item["textColor"]).as<winrt::SolidColorBrush>();
+          XamlDirectInstance::GetXamlDirect().SetColorProperty(
+            comboboxItem,
+            winrt::XamlPropertyIndex::Control_Foreground,
+            brush.Color()
+          );
+      }
+      auto items = XamlDirectInstance::GetXamlDirect().GetObject(comboboxItemsXD).as<winrt::ItemCollection>();
+      items.Append(XamlDirectInstance::GetXamlDirect().GetObject(comboboxItem).as<winrt::ComboBoxItem>());
+      // out of bounds error when adding to collection, otherwise use code below instead of 2 lines above
+       //XamlDirectInstance::GetXamlDirect().AddToCollection(comboboxItemsXD, comboboxItem);
     }
     m_hasNewItems = true;
   }
   if (m_selectedIndex < static_cast<int32_t>(m_items.size()))
-    combobox.SelectedIndex(m_selectedIndex);
+    //combobox.SelectedIndex(m_selectedIndex);
+    XamlDirectInstance::GetXamlDirect().SetInt32Property(
+      comboboxXD,
+      winrt::XamlPropertyIndex::Selector_SelectedIndex,
+      m_selectedIndex
+    );
 }
 
 /*static*/ void PickerShadowNode::OnSelectionChanged(IReactInstance& instance, int64_t tag, folly::dynamic&& value, int32_t selectedIndex, folly::dynamic&& text)
