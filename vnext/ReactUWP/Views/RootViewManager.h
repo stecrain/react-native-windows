@@ -4,6 +4,7 @@
 #pragma once
 
 #include <Views/FrameworkElementViewManager.h>
+#include <XamlDirectInstance.h>
 
 namespace react { namespace uwp {
 

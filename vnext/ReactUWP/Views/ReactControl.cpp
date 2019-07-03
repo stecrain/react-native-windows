@@ -21,6 +21,7 @@
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Input.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
+#include <winrt/Windows.UI.Xaml.Core.Direct.h>
 
 namespace react {
 namespace uwp {
@@ -160,7 +161,15 @@ void ReactControl::DetachRoot() noexcept
     {
       auto grid(m_xamlRootView.as<winrt::Grid>());
       if (grid != nullptr)
-        grid.Children().Clear();
+      {
+        //grid.Children().Clear();
+        auto gridXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(grid);
+        auto gridChildrenXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObjectProperty(
+          gridXD,
+          winrt::XamlPropertyIndex::Panel_Children
+        );
+        XamlDirectInstance::GetXamlDirect().ClearCollection(gridChildrenXD);
+      }
 
       m_redBoxGrid = nullptr;
       m_errorTextBlock = nullptr;
@@ -244,7 +253,10 @@ int64_t ReactControl::GetActualHeight() const
   auto element = m_xamlRootView.as<winrt::FrameworkElement>();
   assert(element != nullptr);
 
-  return static_cast<int64_t>(element.ActualHeight());
+  //return static_cast<int64_t>(element.ActualHeight());
+  auto elementXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(element);
+  auto actualHeight = XamlDirectInstance::GetXamlDirect().GetDoubleProperty(elementXD, winrt::XamlPropertyIndex::FrameworkElement_ActualHeight);
+  return static_cast<int64_t>(actualHeight);
 }
 
 int64_t ReactControl::GetActualWidth() const
@@ -252,7 +264,10 @@ int64_t ReactControl::GetActualWidth() const
   auto element = m_xamlRootView.as<winrt::FrameworkElement>();
   assert(element != nullptr);
 
-  return static_cast<int64_t>(element.ActualWidth());
+  //return static_cast<int64_t>(element.ActualWidth());
+  auto elementXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(element);
+  auto actualWidth = XamlDirectInstance::GetXamlDirect().GetDoubleProperty(elementXD, winrt::XamlPropertyIndex::FrameworkElement_ActualWidth);
+  return static_cast<int64_t>(actualWidth);
 }
 
 }

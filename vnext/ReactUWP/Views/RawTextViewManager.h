@@ -6,6 +6,7 @@
 #include <Views/ViewManagerBase.h>
 
 #include <folly/dynamic.h>
+#include <XamlDirectInstance.h>
 
 namespace react { namespace uwp {
 
