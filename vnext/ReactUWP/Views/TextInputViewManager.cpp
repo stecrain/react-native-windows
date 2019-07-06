@@ -225,15 +225,15 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
     const std::string& propertyName = pair.first.getString();
     const folly::dynamic& propertyValue = pair.second;
 
-    if (TryUpdateFontProperties(control, propertyName, propertyValue))
+    if (TryUpdateFontProperties(controlXD, propertyName, propertyValue))
     {
       continue;
     }
-    else if (TryUpdateTextAlignment(textBox, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBox_TextAlignment))
+    else if (TryUpdateTextAlignment(controlXD, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBox_TextAlignment))
     {
       continue;
     }
-    else if (TryUpdateCharacterSpacing(control, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_CharacterSpacing))
+    else if (TryUpdateCharacterSpacing(controlXD, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_CharacterSpacing))
     {
       continue;
     }

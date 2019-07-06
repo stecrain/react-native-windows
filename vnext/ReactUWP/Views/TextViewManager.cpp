@@ -68,31 +68,31 @@ void TextViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
     const std::string& propertyName = pair.first.getString();
     const folly::dynamic& propertyValue = pair.second;
 
-    if (TryUpdateForeground(textBlock, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_Foreground))
+    if (TryUpdateForeground(textBlockXD, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_Foreground))
     {
       continue;
     }
-    else if (TryUpdateFontProperties(textBlock, propertyName, propertyValue))
+    else if (TryUpdateFontProperties(textBlockXD, propertyName, propertyValue))
     {
       continue;
     }
-    else if (TryUpdatePadding(nodeToUpdate, textBlock, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_Padding))
+    else if (TryUpdatePadding(nodeToUpdate, textBlockXD, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_Padding))
     {
       continue;
     }
-    else if (TryUpdateTextAlignment(textBlock, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_TextAlignment))
+    else if (TryUpdateTextAlignment(textBlockXD, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_TextAlignment))
     {
       continue;
     }
-    else if (TryUpdateTextTrimming(textBlock, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_TextTrimming))
+    else if (TryUpdateTextTrimming(textBlockXD, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_TextTrimming))
     {
       continue;
     }
-    else if (TryUpdateTextDecorationLine(textBlock, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_TextDecorations))
+    else if (TryUpdateTextDecorationLine(textBlockXD, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_TextDecorations))
     {
       continue;
     }
-    else if (TryUpdateCharacterSpacing(textBlock, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_CharacterSpacing))
+    else if (TryUpdateCharacterSpacing(textBlockXD, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_CharacterSpacing))
     {
       continue;
     }

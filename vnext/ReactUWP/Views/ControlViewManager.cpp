@@ -42,25 +42,27 @@ void ControlViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const fo
 
   if (control != nullptr)
   {
+    auto controlXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(control);
+
     for (const auto& pair : reactDiffMap.items())
     {
       const std::string& propertyName = pair.first.getString();
       const folly::dynamic& propertyValue = pair.second;
       auto borderPropXD = propertyName == "borderColor" ? winrt::XamlPropertyIndex::Control_BorderBrush : winrt::XamlPropertyIndex::Control_BorderThickness;
 
-      if (TryUpdateBackgroundBrush(control, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_Background))
+      if (TryUpdateBackgroundBrush(controlXD, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_Background))
       {
         continue;
       }
-      else if (TryUpdateBorderProperties(nodeToUpdate, control, propertyName, propertyValue, borderPropXD))
+      else if (TryUpdateBorderProperties(nodeToUpdate, controlXD, propertyName, propertyValue, borderPropXD))
       {
         continue;
       }
-      else if (TryUpdateForeground(control, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_Foreground))
+      else if (TryUpdateForeground(controlXD, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_Foreground))
       {
         continue;
       }
-      else if (implementsPadding && TryUpdatePadding(nodeToUpdate, control, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_Padding))
+      else if (implementsPadding && TryUpdatePadding(nodeToUpdate, controlXD, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_Padding))
       {
         continue;
       }

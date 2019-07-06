@@ -293,6 +293,7 @@ void ViewViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
   auto pPanel = pViewShadowNode->GetViewPanel();
   if (pPanel != nullptr)
   {
+    auto pPanelXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(pPanel);
     for (const auto& pair : reactDiffMap.items())
     {
       const std::string& propertyName = pair.first.getString();
@@ -306,11 +307,11 @@ void ViewViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
         else if (propertyValue.isNull())
           pPanel.ClearValue(ViewPanel::ViewBackgroundProperty());
       }
-      else if (TryUpdateBorderProperties(nodeToUpdate, pPanel, propertyName, propertyValue, borderPropXD))
+      else if (TryUpdateBorderProperties(nodeToUpdate, pPanelXD, propertyName, propertyValue, borderPropXD))
       {
         continue;
       }
-      else if (TryUpdateCornerRadius(nodeToUpdate, pPanel, propertyName, propertyValue, winrt::XamlPropertyIndex::RelativePanel_CornerRadius))
+      else if (TryUpdateCornerRadius(nodeToUpdate, pPanelXD, propertyName, propertyValue, winrt::XamlPropertyIndex::RelativePanel_CornerRadius))
       {
         continue;
       }
