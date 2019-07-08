@@ -10,8 +10,6 @@
 #include <IReactInstance.h>
 #include "TouchEventHandler.h"
 #include "Views/KeyboardEventHandler.h"
-#include <winrt/Windows.UI.Xaml.Controls.h>
-#include <XamlDirectInstance.h>
 
 namespace winrt {
 using namespace Windows::UI;
@@ -20,7 +18,6 @@ using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Input;
 using namespace Windows::Foundation;
 using namespace Windows::UI::Xaml::Media;
-using namespace Windows::UI::Xaml::Core::Direct;
 }
 
 namespace react {

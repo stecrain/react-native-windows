@@ -9,11 +9,9 @@
 #include <Utils/ValueUtils.h>
 
 #include <winrt/Windows.UI.Xaml.Controls.h>
-#include <winrt/Windows.UI.Xaml.Core.Direct.h>
 
 namespace winrt {
   using namespace Windows::UI::Xaml::Controls;
-  using namespace Windows::UI::Xaml::Core::Direct;
 }
 
 namespace react { namespace uwp {
@@ -64,16 +62,14 @@ void ActivityIndicatorViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate
       if (propertyValue.isBool())
         XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
           progressRingXD,
-          winrt::XamlPropertyIndex::ProgressRing_IsActive,
+          XD::XamlPropertyIndex::ProgressRing_IsActive,
           propertyValue.asBool()
         );
-        //progressRing.IsActive(propertyValue.asBool());
       else if (pair.second.isNull())
         XamlDirectInstance::GetXamlDirect().ClearProperty(
           progressRingXD,
-          winrt::XamlPropertyIndex::ProgressRing_IsActive
+          XD::XamlPropertyIndex::ProgressRing_IsActive
         );
-        //progressRing.ClearValue(winrt::ProgressRing::IsActiveProperty());
     }
   }
 

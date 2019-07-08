@@ -8,7 +8,8 @@
 
 #include <winrt/Windows.UI.Xaml.Interop.h>
 #include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.UI.Xaml.Core.Direct.h>
+
+#include <XamlDirectInstance.h>
 
 namespace winrt
 {
@@ -19,7 +20,6 @@ using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Interop;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::Foundation;
-using namespace Windows::UI::Xaml::Core::Direct;
 } // namespace winrt
 
 namespace winrt::react::uwp::implementation
@@ -314,7 +314,7 @@ void ViewPanel::FinalizeProperties()
     m_hasOuterBorder = false;
   }
 
-  auto m_borderXD = XamlDirectInstance::GetXamlDirect().CreateInstance(winrt::XamlTypeIndex::Border);
+  auto m_borderXD = XamlDirectInstance::GetXamlDirect().CreateInstance(XD::XamlTypeIndex::Border);
 
   // Border element
   if (scenario != Scenario::NoBorder)
@@ -333,45 +333,39 @@ void ViewPanel::FinalizeProperties()
 
     // TODO: Can Binding be used here?
     if (hasBorderBrush)
-      //m_border.BorderBrush(BorderBrush());
       XamlDirectInstance::GetXamlDirect().SetColorProperty(
         m_borderXD,
-        winrt::XamlPropertyIndex::Border_BorderBrush,
+        XD::XamlPropertyIndex::Border_BorderBrush,
         BorderBrush().as<winrt::SolidColorBrush>().Color()
       );
     else
-      //m_border.ClearValue(winrt::Border::BorderBrushProperty());
       XamlDirectInstance::GetXamlDirect().ClearProperty(
         m_borderXD,
-        winrt::XamlPropertyIndex::Border_BorderBrush
+        XD::XamlPropertyIndex::Border_BorderBrush
       );
 
     if (hasBorderThickness)
-      //m_border.BorderThickness(BorderThickness());
       XamlDirectInstance::GetXamlDirect().SetThicknessProperty(
         m_borderXD,
-        winrt::XamlPropertyIndex::Border_BorderThickness,
+        XD::XamlPropertyIndex::Border_BorderThickness,
         BorderThickness()
       );
     else
-      //m_border.ClearValue(winrt::Border::BorderThicknessProperty());
       XamlDirectInstance::GetXamlDirect().ClearProperty(
         m_borderXD,
-        winrt::XamlPropertyIndex::Border_BorderThickness
+        XD::XamlPropertyIndex::Border_BorderThickness
       );
 
     if (hasCornerRadius)
-      /*m_border.CornerRadius(CornerRadius());*/
       XamlDirectInstance::GetXamlDirect().SetCornerRadiusProperty(
         m_borderXD,
-        winrt::XamlPropertyIndex::Border_CornerRadius,
+        XD::XamlPropertyIndex::Border_CornerRadius,
         CornerRadius()
       );
     else
-      //m_border.ClearValue(winrt::Border::CornerRadiusProperty());
       XamlDirectInstance::GetXamlDirect().ClearProperty(
         m_borderXD,
-        winrt::XamlPropertyIndex::Border_CornerRadius
+        XD::XamlPropertyIndex::Border_CornerRadius
       );
   }
   else if (m_border != nullptr)
@@ -386,17 +380,15 @@ void ViewPanel::FinalizeProperties()
     m_borderXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(m_border);
 
     if (hasBackground)
-      //m_border.Background(ViewBackground());
       XamlDirectInstance::GetXamlDirect().SetColorProperty(
         m_borderXD,
-        winrt::XamlPropertyIndex::Border_Background,
+        XD::XamlPropertyIndex::Border_Background,
         ViewBackground().as<winrt::SolidColorBrush>().Color()
       );
     else
-      //m_border.ClearValue(winrt::Border::BackgroundProperty());
       XamlDirectInstance::GetXamlDirect().ClearProperty(
         m_borderXD,
-        winrt::XamlPropertyIndex::Border_Background
+        XD::XamlPropertyIndex::Border_Background
       );
 
     ClearValue(winrt::Panel::BackgroundProperty());

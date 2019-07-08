@@ -17,13 +17,14 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.UI.Xaml.Core.Direct.h>
 
+#include <XamlDirectInstance.h>
+
 namespace winrt {
   using namespace Windows::UI::Xaml;
   using namespace Windows::UI::Xaml::Controls;
   using namespace Windows::Globalization;
   using namespace Windows::Globalization::DateTimeFormatting;
   using namespace Windows::Foundation;
-  using namespace Windows::UI::Xaml::Core::Direct;
 }
 
 namespace react { namespace uwp {
@@ -71,7 +72,6 @@ void DatePickerShadowNode::updateProperties(const folly::dynamic&& props)
 
   auto datePickerXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(datePicker);
 
-
   bool updateSelectedDate = false;
   bool updateMaxDate = false;
   bool updateMinDate = false;
@@ -84,49 +84,43 @@ void DatePickerShadowNode::updateProperties(const folly::dynamic&& props)
     if (propertyName == "dayOfWeekFormat")
     {
       if (propertyValue.isString())
-        //datePicker.DayOfWeekFormat(asHstring(propertyValue));
         XamlDirectInstance::GetXamlDirect().SetStringProperty(
           datePickerXD,
-          winrt::XamlPropertyIndex::CalendarDatePicker_DayOfWeekFormat,
+          XD::XamlPropertyIndex::CalendarDatePicker_DayOfWeekFormat,
           asHstring(propertyValue)
         );
       else if (propertyValue.isNull())
-        //datePicker.ClearValue(winrt::CalendarDatePicker::DayOfWeekFormatProperty());
         XamlDirectInstance::GetXamlDirect().ClearProperty(
           datePickerXD,
-          winrt::XamlPropertyIndex::CalendarDatePicker_DayOfWeekFormat
+          XD::XamlPropertyIndex::CalendarDatePicker_DayOfWeekFormat
         );
     }
     else if (propertyName == "dateFormat")
     {
       if (propertyValue.isString())
-        //datePicker.DateFormat(asHstring(propertyValue));
         XamlDirectInstance::GetXamlDirect().SetStringProperty(
           datePickerXD,
-          winrt::XamlPropertyIndex::CalendarDatePicker_DateFormat,
+          XD::XamlPropertyIndex::CalendarDatePicker_DateFormat,
           asHstring(propertyValue)
         );
       else if (propertyValue.isNull())
-        //datePicker.ClearValue(winrt::CalendarDatePicker::DateFormatProperty());
         XamlDirectInstance::GetXamlDirect().ClearProperty(
           datePickerXD,
-          winrt::XamlPropertyIndex::CalendarDatePicker_DateFormat
+          XD::XamlPropertyIndex::CalendarDatePicker_DateFormat
         );
     }
     else if (propertyName == "firstDayOfWeek")
     {
       if (propertyValue.isNumber())
-        //datePicker.FirstDayOfWeek(static_cast<winrt::DayOfWeek>(static_cast<int64_t>(propertyValue.asDouble())));
         XamlDirectInstance::GetXamlDirect().SetEnumProperty(
           datePickerXD,
-          winrt::XamlPropertyIndex::CalendarDatePicker_FirstDayOfWeek,
+          XD::XamlPropertyIndex::CalendarDatePicker_FirstDayOfWeek,
           static_cast<int32_t>(propertyValue.asDouble())
         );
       else if (propertyValue.isNull())
-        //datePicker.ClearValue(winrt::CalendarDatePicker::FirstDayOfWeekProperty());
         XamlDirectInstance::GetXamlDirect().ClearProperty(
           datePickerXD,
-          winrt::XamlPropertyIndex::CalendarDatePicker_FirstDayOfWeek
+          XD::XamlPropertyIndex::CalendarDatePicker_FirstDayOfWeek
         );
     }
     else if (propertyName == "maxDate")
@@ -138,10 +132,9 @@ void DatePickerShadowNode::updateProperties(const folly::dynamic&& props)
       }
       else if (propertyValue.isNull())
       {
-        //datePicker.ClearValue(winrt::CalendarDatePicker::MaxDateProperty());
         XamlDirectInstance::GetXamlDirect().ClearProperty(
           datePickerXD,
-          winrt::XamlPropertyIndex::CalendarDatePicker_MaxDate
+          XD::XamlPropertyIndex::CalendarDatePicker_MaxDate
         );
       }
     }
@@ -154,27 +147,24 @@ void DatePickerShadowNode::updateProperties(const folly::dynamic&& props)
       }
       else if (propertyValue.isNull())
       {
-        //datePicker.ClearValue(winrt::CalendarDatePicker::MinDateProperty());
         XamlDirectInstance::GetXamlDirect().ClearProperty(
           datePickerXD,
-          winrt::XamlPropertyIndex::CalendarDatePicker_MinDate
+          XD::XamlPropertyIndex::CalendarDatePicker_MinDate
         );
       }
     }
     else if (propertyName == "placeholderText")
     {
       if (propertyValue.isString())
-        //datePicker.PlaceholderText(asHstring(propertyValue));
         XamlDirectInstance::GetXamlDirect().SetStringProperty(
           datePickerXD,
-          winrt::XamlPropertyIndex::CalendarDatePicker_PlaceholderText,
+          XD::XamlPropertyIndex::CalendarDatePicker_PlaceholderText,
           asHstring(propertyValue)
         );
       else if (propertyValue.isNull())
-        //datePicker.ClearValue(winrt::CalendarDatePicker::PlaceholderTextProperty());
         XamlDirectInstance::GetXamlDirect().ClearProperty(
           datePickerXD,
-          winrt::XamlPropertyIndex::CalendarDatePicker_PlaceholderText
+          XD::XamlPropertyIndex::CalendarDatePicker_PlaceholderText
         );
     }
     else if (propertyName == "selectedDate")
@@ -186,10 +176,9 @@ void DatePickerShadowNode::updateProperties(const folly::dynamic&& props)
       }
       else if (propertyValue.isNull())
       {
-        //datePicker.ClearValue(winrt::CalendarDatePicker::DateProperty());
         XamlDirectInstance::GetXamlDirect().ClearProperty(
           datePickerXD,
-          winrt::XamlPropertyIndex::CalendarDatePicker_Date
+          XD::XamlPropertyIndex::CalendarDatePicker_Date
         );
       }
     }
@@ -203,26 +192,23 @@ void DatePickerShadowNode::updateProperties(const folly::dynamic&& props)
   }
 
   if (updateMaxDate)
-    //datePicker.MaxDate(DateTimeFrom(m_maxTime, m_timeZoneOffsetInSeconds));
     XamlDirectInstance::GetXamlDirect().SetDateTimeProperty(
       datePickerXD,
-      winrt::XamlPropertyIndex::CalendarDatePicker_MaxDate,
+      XD::XamlPropertyIndex::CalendarDatePicker_MaxDate,
       DateTimeFrom(m_maxTime, m_timeZoneOffsetInSeconds)
     );
 
   if (updateMinDate)
-    //datePicker.MinDate(DateTimeFrom(m_minTime, m_timeZoneOffsetInSeconds));
     XamlDirectInstance::GetXamlDirect().SetDateTimeProperty(
       datePickerXD,
-      winrt::XamlPropertyIndex::CalendarDatePicker_MinDate,
+      XD::XamlPropertyIndex::CalendarDatePicker_MinDate,
       DateTimeFrom(m_minTime, m_timeZoneOffsetInSeconds)
     );
 
   if (updateSelectedDate)
-    //datePicker.Date(DateTimeFrom(m_selectedTime, m_timeZoneOffsetInSeconds));
     XamlDirectInstance::GetXamlDirect().SetDateTimeProperty(
       datePickerXD,
-      winrt::XamlPropertyIndex::CalendarDatePicker_Date,
+      XD::XamlPropertyIndex::CalendarDatePicker_Date,
       DateTimeFrom(m_selectedTime, m_timeZoneOffsetInSeconds)
     );
 

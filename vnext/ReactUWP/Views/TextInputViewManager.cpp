@@ -17,14 +17,14 @@
 #include <winrt/Windows.UI.Text.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Input.h>
-#include <winrt/Windows.UI.Xaml.Core.Direct.h>
+
+#include <XamlDirectInstance.h>
 
 namespace winrt {
 using namespace Windows::Foundation;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Input;
-using namespace Windows::UI::Xaml::Core::Direct;
 }
 
 namespace react {
@@ -225,13 +225,8 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
     const std::string& propertyName = pair.first.getString();
     const folly::dynamic& propertyValue = pair.second;
 
-    winrt::XamlPropertyIndex fontPropIdx;
-
-    if (propertyName == "fontSize")
-    {
-      fontPropIdx = XD::XamlPropertyIndex::Control_FontSize;
-    }
-    else if (propertyName == "fontFamily")
+    auto fontPropIdx = XD::XamlPropertyIndex::Control_FontSize;
+    if (propertyName == "fontFamily")
     {
       fontPropIdx = XD::XamlPropertyIndex::Control_FontFamily;
     }
@@ -239,43 +234,49 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
     {
       fontPropIdx = XD::XamlPropertyIndex::Control_FontWeight;
     }
+    else if (propertyName == "fontStyle")
+    {
+      fontPropIdx = XD::XamlPropertyIndex::Control_FontStyle;
+    }
 
     if (TryUpdateFontProperties(controlXD, propertyName, propertyValue, fontPropIdx))
     {
       continue;
     }
-    else if (TryUpdateTextAlignment(controlXD, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBox_TextAlignment))
+    else if (TryUpdateTextAlignment(controlXD, propertyName, propertyValue, XD::XamlPropertyIndex::TextBox_TextAlignment))
     {
       continue;
     }
-    else if (TryUpdateCharacterSpacing(controlXD, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_CharacterSpacing))
+    else if (TryUpdateCharacterSpacing(controlXD, propertyName, propertyValue, XD::XamlPropertyIndex::Control_CharacterSpacing))
     {
       continue;
     }
     else if (propertyName == "multiline")
     {
       if (propertyValue.isBool())
-        //textBox.TextWrapping(propertyValue.asBool() ? winrt::TextWrapping::Wrap : winrt::TextWrapping::NoWrap);
         XamlDirectInstance::GetXamlDirect().SetEnumProperty(
           textBoxXD, XD::XamlPropertyIndex::TextBox_TextWrapping,
           static_cast<uint32_t>(propertyValue.asBool() ? winrt::TextWrapping::Wrap : winrt::TextWrapping::NoWrap)
         );
       else if (propertyValue.isNull())
-        //textBox.ClearValue(winrt::TextBox::TextWrappingProperty());
-        XamlDirectInstance::GetXamlDirect().ClearProperty(textBoxXD, XD::XamlPropertyIndex::TextBox_TextWrapping);
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          textBoxXD,
+          XD::XamlPropertyIndex::TextBox_TextWrapping
+        );
     }
     else if (propertyName == "allowFontScaling")
     {
       if (propertyValue.isBool())
-        //textBox.IsTextScaleFactorEnabled(propertyValue.asBool());
         XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
           textBoxXD,
           XD::XamlPropertyIndex::Control_IsTextScaleFactorEnabled,
           propertyValue.asBool()
         );
       else if (propertyValue.isNull())
-        //textBox.ClearValue(winrt::Control::IsTextScaleFactorEnabledProperty());
-        XamlDirectInstance::GetXamlDirect().ClearProperty(textBoxXD, XD::XamlPropertyIndex::Control_IsTextScaleFactorEnabled);
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          textBoxXD,
+          XD::XamlPropertyIndex::Control_IsTextScaleFactorEnabled
+        );
     }
     else if (propertyName == "clearTextOnFocus")
     {
@@ -285,56 +286,60 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
     else if (propertyName == "editable")
     {
       if (propertyValue.isBool())
-        //textBox.IsReadOnly(!propertyValue.asBool());
         XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
           textBoxXD,
           XD::XamlPropertyIndex::TextBox_IsReadOnly,
           !propertyValue.asBool()
         );
       else if (propertyValue.isNull())
-        //textBox.ClearValue(winrt::TextBox::IsReadOnlyProperty());
-        XamlDirectInstance::GetXamlDirect().ClearProperty(textBoxXD, XD::XamlPropertyIndex::TextBox_IsReadOnly);
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          textBoxXD,
+          XD::XamlPropertyIndex::TextBox_IsReadOnly
+        );
     }
     else if (propertyName == "maxLength")
     {
       if (propertyValue.isNumber())
-        //textBox.MaxLength(static_cast<int32_t>(propertyValue.asDouble()));
         XamlDirectInstance::GetXamlDirect().SetInt32Property(
           textBoxXD,
           XD::XamlPropertyIndex::TextBox_MaxLength,
           static_cast<int32_t>(propertyValue.asDouble())
         );
       else if (propertyValue.isNull())
-        //textBox.ClearValue(winrt::TextBox::MaxLengthProperty());
-        XamlDirectInstance::GetXamlDirect().ClearProperty(textBoxXD, XD::XamlPropertyIndex::TextBox_MaxLength);
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          textBoxXD,
+          XD::XamlPropertyIndex::TextBox_MaxLength
+        );
     }
     else if (propertyName == "placeholder")
     {
       if (propertyValue.isString())
-        //textBox.PlaceholderText(asHstring(propertyValue));
         XamlDirectInstance::GetXamlDirect().SetStringProperty(
           textBoxXD,
           XD::XamlPropertyIndex::TextBox_PlaceholderText,
           asHstring(propertyValue)
         );
       else if (propertyValue.isNull())
-        //textBox.ClearValue(winrt::TextBox::PlaceholderTextProperty());
-        XamlDirectInstance::GetXamlDirect().ClearProperty(textBoxXD, XD::XamlPropertyIndex::TextBox_PlaceholderText);
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          textBoxXD,
+          XD::XamlPropertyIndex::TextBox_PlaceholderText
+        );
     }
     else if (propertyName == "placeholderTextColor")
     {
       if (textBox.try_as<winrt::ITextBlock6>())
       {
         if (propertyValue.isNumber())
-          //textBox.PlaceholderForeground(SolidColorBrushFrom(propertyValue));
           XamlDirectInstance::GetXamlDirect().SetObjectProperty(
             textBoxXD,
             XD::XamlPropertyIndex::TextBox_PlaceholderForeground,
             winrt::box_value(SolidColorBrushFrom(propertyValue))
           );
         else if (propertyValue.isNull())
-          //textBox.ClearValue(winrt::TextBox::PlaceholderForegroundProperty());
-          XamlDirectInstance::GetXamlDirect().ClearProperty(textBoxXD, XD::XamlPropertyIndex::TextBox_PlaceholderForeground);
+          XamlDirectInstance::GetXamlDirect().ClearProperty(
+            textBoxXD,
+            XD::XamlPropertyIndex::TextBox_PlaceholderForeground
+          );
       }
     }
     else if (propertyName == "scrollEnabled")
@@ -342,10 +347,16 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
       if (propertyValue.isBool() && textBox.TextWrapping() == winrt::TextWrapping::Wrap)
       {
         auto scrollMode = propertyValue.asBool() ? winrt::ScrollMode::Auto : winrt::ScrollMode::Disabled;
-        /*winrt::ScrollViewer::SetVerticalScrollMode(textBox, scrollMode);
-        winrt::ScrollViewer::SetHorizontalScrollMode(textBox, scrollMode);*/
-        XamlDirectInstance::GetXamlDirect().SetEnumProperty(textBoxXD, XD::XamlPropertyIndex::ScrollViewer_VerticalScrollMode, static_cast<uint32_t>(scrollMode));
-        XamlDirectInstance::GetXamlDirect().SetEnumProperty(textBoxXD, XD::XamlPropertyIndex::ScrollViewer_HorizontalScrollMode, static_cast<uint32_t>(scrollMode));
+        XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+          textBoxXD,
+          XD::XamlPropertyIndex::ScrollViewer_VerticalScrollMode,
+          static_cast<uint32_t>(scrollMode)
+        );
+        XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+          textBoxXD,
+          XD::XamlPropertyIndex::ScrollViewer_HorizontalScrollMode,
+          static_cast<uint32_t>(scrollMode)
+        );
       }
     }
     else if (propertyName == "selection")
@@ -361,15 +372,16 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
     else if (propertyName == "selectionColor")
     {
       if (propertyValue.isNumber())
-        //textBox.SelectionHighlightColor(SolidColorBrushFrom(propertyValue));
         XamlDirectInstance::GetXamlDirect().SetObjectProperty(
           textBoxXD,
           XD::XamlPropertyIndex::TextBox_SelectionHighlightColor,
           winrt::box_value(SolidColorBrushFrom(propertyValue))
         );
       else if (propertyValue.isNull())
-        //textBox.ClearValue(winrt::TextBox::SelectionHighlightColorProperty());
-        XamlDirectInstance::GetXamlDirect().ClearProperty(textBoxXD, XD::XamlPropertyIndex::TextBox_SelectionHighlightColor);
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          textBoxXD,
+          XD::XamlPropertyIndex::TextBox_SelectionHighlightColor
+        );
     }
     else if (propertyName == "selectTextOnFocus")
     {
@@ -379,15 +391,16 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
     else if (propertyName == "spellCheck")
     {
       if (propertyValue.isBool())
-        //textBox.IsSpellCheckEnabled(propertyValue.asBool());
         XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
           textBoxXD,
           XD::XamlPropertyIndex::TextBox_IsSpellCheckEnabled,
           propertyValue.asBool()
         );
       else if (propertyValue.isNull())
-        //textBox.ClearValue(winrt::TextBox::IsSpellCheckEnabledProperty());
-        XamlDirectInstance::GetXamlDirect().ClearProperty(textBoxXD, XD::XamlPropertyIndex::TextBox_IsSpellCheckEnabled);
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          textBoxXD,
+          XD::XamlPropertyIndex::TextBox_IsSpellCheckEnabled
+        );
     }
     else if (propertyName == "text")
     {
@@ -395,18 +408,25 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
       {     
         if (propertyValue.isString())
         {
-          //auto oldValue = textBox.Text();
-          auto oldValue = XamlDirectInstance::GetXamlDirect().GetStringProperty(textBoxXD, XD::XamlPropertyIndex::TextBox_Text);
+          auto oldValue = XamlDirectInstance::GetXamlDirect().GetStringProperty(
+            textBoxXD,
+            XD::XamlPropertyIndex::TextBox_Text
+          );
           auto newValue = asHstring(propertyValue);
           if (oldValue != newValue)
           {
-            //textBox.Text(newValue);
-            XamlDirectInstance::GetXamlDirect().SetStringProperty(textBoxXD, XD::XamlPropertyIndex::TextBox_Text, newValue);
+            XamlDirectInstance::GetXamlDirect().SetStringProperty(
+              textBoxXD,
+              XD::XamlPropertyIndex::TextBox_Text,
+              newValue
+            );
           }
         }
         else if (propertyValue.isNull())
-          //textBox.ClearValue(winrt::TextBox::TextProperty());
-          XamlDirectInstance::GetXamlDirect().ClearProperty(textBoxXD, XD::XamlPropertyIndex::TextBox_Text);
+          XamlDirectInstance::GetXamlDirect().ClearProperty(
+            textBoxXD,
+            XD::XamlPropertyIndex::TextBox_Text
+          );
       }
     }
     else if (propertyName == "mostRecentEventCount")

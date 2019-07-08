@@ -16,6 +16,8 @@
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Controls.Primitives.h>
 
+#include <XamlDirectInstance.h>
+
 namespace winrt {
   using namespace Windows::Foundation;
   using namespace Windows::UI::Core;
@@ -93,6 +95,8 @@ void PopupShadowNode::updateProperties(const folly::dynamic&& props)
   if (popup == nullptr)
     return;
 
+  auto popupXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(popup);
+
   for (auto& pair : props.items())
   {
     const std::string& propertyName = pair.first.getString();
@@ -108,30 +112,58 @@ void PopupShadowNode::updateProperties(const folly::dynamic&& props)
     else if (propertyName == "isOpen")
     {
       if (propertyValue.isBool())
-        popup.IsOpen(propertyValue.getBool());
+        XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+          popupXD,
+          XD::XamlPropertyIndex::Popup_IsOpen,
+          propertyValue.getBool()
+        );
       else if (propertyValue.isNull())
-        popup.ClearValue(winrt::Popup::IsOpenProperty());
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          popupXD,
+          XD::XamlPropertyIndex::Popup_IsOpen
+        );
     }
     else if (propertyName == "isLightDismissEnabled")
     {
       if (propertyValue.isBool())
-        popup.IsLightDismissEnabled(propertyValue.getBool());
+        XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+          popupXD,
+          XD::XamlPropertyIndex::Popup_IsLightDismissEnabled,
+          propertyValue.getBool()
+        );
       else if (propertyValue.isNull())
-        popup.ClearValue(winrt::Popup::IsLightDismissEnabledProperty());
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          popupXD,
+          XD::XamlPropertyIndex::Popup_IsLightDismissEnabled
+        );
     }
     else if (propertyName == "horizontalOffset")
     {
       if (propertyValue.isNumber())
-        popup.HorizontalOffset(propertyValue.asDouble());
+        XamlDirectInstance::GetXamlDirect().SetDoubleProperty(
+          popupXD,
+          XD::XamlPropertyIndex::Popup_HorizontalOffset,
+          propertyValue.asDouble()
+        );
       else if (propertyValue.isNull())
-        popup.ClearValue(winrt::Popup::HorizontalOffsetProperty());
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          popupXD,
+          XD::XamlPropertyIndex::Popup_HorizontalOffset
+        );
     }
     else if (propertyName == "verticalOffset")
     {
       if (propertyValue.isNumber())
-        popup.VerticalOffset(propertyValue.asDouble());
+        XamlDirectInstance::GetXamlDirect().SetDoubleProperty(
+          popupXD,
+          XD::XamlPropertyIndex::Popup_VerticalOffset,
+          propertyValue.asDouble()
+        );
       else if (propertyValue.isNull())
-        popup.ClearValue(winrt::Popup::VerticalOffsetProperty());
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          popupXD,
+          XD::XamlPropertyIndex::Popup_VerticalOffset
+        );
     }
   }
 

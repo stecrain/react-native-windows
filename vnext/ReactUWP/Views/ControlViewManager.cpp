@@ -10,12 +10,12 @@
 
 #include <winrt/Windows.UI.Xaml.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
-#include <winrt/Windows.UI.Xaml.Core.Direct.h>
+
+#include <XamlDirectInstance.h>
 
 namespace winrt {
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
-using namespace Windows::UI::Xaml::Core::Direct;
 }
 
 namespace react { namespace uwp {
@@ -48,21 +48,21 @@ void ControlViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const fo
     {
       const std::string& propertyName = pair.first.getString();
       const folly::dynamic& propertyValue = pair.second;
-      auto borderPropXD = propertyName == "borderColor" ? winrt::XamlPropertyIndex::Control_BorderBrush : winrt::XamlPropertyIndex::Control_BorderThickness;
+      auto borderProperty = propertyName == "borderColor" ? XD::XamlPropertyIndex::Control_BorderBrush : XD::XamlPropertyIndex::Control_BorderThickness;
 
-      if (TryUpdateBackgroundBrush(controlXD, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_Background))
+      if (TryUpdateBackgroundBrush(controlXD, propertyName, propertyValue, XD::XamlPropertyIndex::Control_Background))
       {
         continue;
       }
-      else if (TryUpdateBorderProperties(nodeToUpdate, controlXD, propertyName, propertyValue, borderPropXD))
+      else if (TryUpdateBorderProperties(nodeToUpdate, controlXD, propertyName, propertyValue, borderProperty))
       {
         continue;
       }
-      else if (TryUpdateForeground(controlXD, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_Foreground))
+      else if (TryUpdateForeground(controlXD, propertyName, propertyValue, XD::XamlPropertyIndex::Control_Foreground))
       {
         continue;
       }
-      else if (implementsPadding && TryUpdatePadding(nodeToUpdate, controlXD, propertyName, propertyValue, winrt::XamlPropertyIndex::Control_Padding))
+      else if (implementsPadding && TryUpdatePadding(nodeToUpdate, controlXD, propertyName, propertyValue, XD::XamlPropertyIndex::Control_Padding))
       {
         continue;
       }

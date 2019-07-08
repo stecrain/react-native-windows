@@ -21,7 +21,8 @@
 #include <winrt/Windows.UI.Xaml.Input.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
 #include <winrt/Windows.System.h>
-#include <winrt/Windows.UI.Xaml.Core.Direct.h>
+
+#include <XamlDirectInstance.h>
 
 #if defined(_DEBUG)
 // Currently only used for tagging controls in debug
@@ -35,7 +36,6 @@ using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Input;
 using namespace Windows::UI::Xaml::Media;
-using namespace Windows::UI::Xaml::Core::Direct;
 }
 
 namespace react { namespace uwp {
@@ -298,7 +298,7 @@ void ViewViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
     {
       const std::string& propertyName = pair.first.getString();
       const folly::dynamic& propertyValue = pair.second;
-      auto borderPropXD = propertyName == "borderColor" ? winrt::XamlPropertyIndex::RelativePanel_BorderBrush : winrt::XamlPropertyIndex::RelativePanel_BorderThickness;
+      auto borderPropXD = propertyName == "borderColor" ? XD::XamlPropertyIndex::RelativePanel_BorderBrush : XD::XamlPropertyIndex::RelativePanel_BorderThickness;
 
       if (propertyName == "backgroundColor")
       {
@@ -311,7 +311,7 @@ void ViewViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
       {
         continue;
       }
-      else if (TryUpdateCornerRadius(nodeToUpdate, pPanelXD, propertyName, propertyValue, winrt::XamlPropertyIndex::RelativePanel_CornerRadius))
+      else if (TryUpdateCornerRadius(nodeToUpdate, pPanelXD, propertyName, propertyValue, XD::XamlPropertyIndex::RelativePanel_CornerRadius))
       {
         continue;
       }

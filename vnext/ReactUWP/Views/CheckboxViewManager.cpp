@@ -12,13 +12,12 @@
 
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Controls.Primitives.h>
-#include <winrt/Windows.UI.Xaml.Core.Direct.h>
 
+#include <XamlDirectInstance.h>
 
 namespace winrt {
   using namespace Windows::UI::Xaml;
   using namespace Windows::UI::Xaml::Controls;
-  using namespace Windows::UI::Xaml::Core::Direct;
 }
 
 namespace react { namespace uwp {
@@ -120,32 +119,28 @@ void CheckBoxViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const f
      if (propertyValue.isBool())
        XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
          checkboxXD,
-         winrt::XamlPropertyIndex::Control_IsEnabled,
+         XD::XamlPropertyIndex::Control_IsEnabled,
          !propertyValue.asBool()
        );
-       //checkbox.IsEnabled(!propertyValue.asBool());
      else if (pair.second.isNull())
        XamlDirectInstance::GetXamlDirect().ClearProperty(
          checkboxXD,
-         winrt::XamlPropertyIndex::Control_IsEnabled
+         XD::XamlPropertyIndex::Control_IsEnabled
        );
-       //checkbox.ClearValue(winrt::Control::IsEnabledProperty());
    }
    else if (propertyName == "checked")
    {
      if (propertyValue.isBool())
        XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
          checkboxXD,
-         winrt::XamlPropertyIndex::ToggleButton_IsChecked,
+         XD::XamlPropertyIndex::ToggleButton_IsChecked,
          propertyValue.asBool()
        );
-       //checkbox.IsChecked(propertyValue.asBool());
      else if (pair.second.isNull())
        XamlDirectInstance::GetXamlDirect().ClearProperty(
          checkboxXD,
-         winrt::XamlPropertyIndex::ToggleButton_IsChecked
+         XD::XamlPropertyIndex::ToggleButton_IsChecked
        );
-       //checkbox.ClearValue(winrt::Primitives::ToggleButton::IsCheckedProperty());
    }
   }
 
