@@ -156,12 +156,7 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
           }
           else if (propertyValue.isNull())
           {
-            //element.TransformMatrix(winrt::Windows::Foundation::Numerics::float4x4::identity());
-            XamlDirectInstance::GetXamlDirect().SetObjectProperty(
-              elementXD,
-              XD::XamlPropertyIndex::UIElement_TransformMatrix,
-              winrt::box_value(winrt::Windows::Foundation::Numerics::float4x4::identity())
-            );
+            element.TransformMatrix(winrt::Windows::Foundation::Numerics::float4x4::identity());
           }
         }
       }
@@ -471,12 +466,16 @@ void FrameworkElementViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate,
       {
         if (propertyValue.isString())
         {
-          winrt::TextBlock tooltip = winrt::TextBlock();
-          tooltip.Text(asHstring(propertyValue));
-          XamlDirectInstance::GetXamlDirect().SetObjectProperty(
+          auto tooltip = XamlDirectInstance::GetXamlDirect().CreateInstance(XD::XamlTypeIndex::TextBlock);
+          XamlDirectInstance::GetXamlDirect().SetStringProperty(
+            tooltip,
+            XD::XamlPropertyIndex::TextBlock_Text,
+            asHstring(propertyValue)
+          );
+          XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(
             elementXD,
             XD::XamlPropertyIndex::ToolTipService_ToolTip,
-            winrt::box_value(tooltip)
+            tooltip
           );
         }
       }

@@ -329,11 +329,12 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
     {
       if (textBox.try_as<winrt::ITextBlock6>())
       {
+        auto solidColorBrush = SolidColorBrushFrom(propertyValue).as<winrt::SolidColorBrush>();
         if (propertyValue.isNumber())
-          XamlDirectInstance::GetXamlDirect().SetObjectProperty(
+          XamlDirectInstance::GetXamlDirect().SetColorProperty(
             textBoxXD,
             XD::XamlPropertyIndex::TextBox_PlaceholderForeground,
-            winrt::box_value(SolidColorBrushFrom(propertyValue))
+            solidColorBrush.Color()
           );
         else if (propertyValue.isNull())
           XamlDirectInstance::GetXamlDirect().ClearProperty(
@@ -371,11 +372,12 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
     }
     else if (propertyName == "selectionColor")
     {
+      auto solidColorBrush = SolidColorBrushFrom(propertyValue).as<winrt::SolidColorBrush>();
       if (propertyValue.isNumber())
-        XamlDirectInstance::GetXamlDirect().SetObjectProperty(
+        XamlDirectInstance::GetXamlDirect().SetColorProperty(
           textBoxXD,
           XD::XamlPropertyIndex::TextBox_SelectionHighlightColor,
-          winrt::box_value(SolidColorBrushFrom(propertyValue))
+          solidColorBrush.Color()
         );
       else if (propertyValue.isNull())
         XamlDirectInstance::GetXamlDirect().ClearProperty(

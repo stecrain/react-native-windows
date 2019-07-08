@@ -91,19 +91,20 @@ static inline void UpdatePadding(ShadowNodeBase* node, XD::IXamlDirectObject ele
 {
   node->m_padding[edge] = margin;
   winrt::Thickness thickness = GetThickness(node->m_padding, IsFlowRTL(element));
-  XamlDirectInstance::GetXamlDirect().SetObjectProperty(element, propertyIndex, winrt::box_value(thickness));
+  XamlDirectInstance::GetXamlDirect().SetThicknessProperty(element, propertyIndex, thickness);
 }
 
 static inline void SetBorderThickness(ShadowNodeBase* node, XD::IXamlDirectObject element, ShadowEdges edge, double margin, XD::XamlPropertyIndex propertyIndex)
 {
   node->m_border[edge] = margin;
   winrt::Thickness thickness = GetThickness(node->m_border, IsFlowRTL(element));
-  XamlDirectInstance::GetXamlDirect().SetObjectProperty(element, propertyIndex, winrt::box_value(thickness));
+  XamlDirectInstance::GetXamlDirect().SetThicknessProperty(element, propertyIndex, thickness);
 }
 
 static inline void SetBorderBrush(XD::IXamlDirectObject element, const winrt::Windows::UI::Xaml::Media::Brush& brush, XD::XamlPropertyIndex propertyIndex)
 {
-  XamlDirectInstance::GetXamlDirect().SetObjectProperty(element, propertyIndex, winrt::box_value(brush));
+  auto solidColorBrush = brush.as<winrt::SolidColorBrush>();
+  XamlDirectInstance::GetXamlDirect().SetColorProperty(element, propertyIndex, solidColorBrush.Color());
 }
 
 static inline bool TryUpdateBackgroundBrush(XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
@@ -111,7 +112,10 @@ static inline bool TryUpdateBackgroundBrush(XD::IXamlDirectObject element, const
   if (propertyName == "backgroundColor")
   {
     if (propertyValue.isNumber())
-      XamlDirectInstance::GetXamlDirect().SetObjectProperty(element, propertyIndex, winrt::box_value(BrushFrom(propertyValue)));
+    {
+      auto solidColorBrush = BrushFrom(propertyValue).as<winrt::SolidColorBrush>();
+      XamlDirectInstance::GetXamlDirect().SetColorProperty(element, propertyIndex, solidColorBrush.Color());
+    }
     else if (propertyValue.isNull())
       XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
 
@@ -125,7 +129,7 @@ static inline void UpdateCornerRadius(ShadowNodeBase* node, XD::IXamlDirectObjec
 {
   node->m_cornerRadius[corner] = newValue;
   winrt::CornerRadius cornerRadius = GetCornerRadius(node->m_cornerRadius, IsFlowRTL(element));
-  XamlDirectInstance::GetXamlDirect().SetObjectProperty(element, propertyIndex, winrt::box_value(cornerRadius));
+  XamlDirectInstance::GetXamlDirect().SetCornerRadiusProperty(element, propertyIndex, cornerRadius);
 }
 
 static inline bool TryUpdateForeground(XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
@@ -133,7 +137,10 @@ static inline bool TryUpdateForeground(XD::IXamlDirectObject element, const std:
   if (propertyName == "color")
   {
     if (propertyValue.isNumber())
-      XamlDirectInstance::GetXamlDirect().SetObjectProperty(element, propertyIndex, winrt::box_value(BrushFrom(propertyValue)));
+    {
+      auto solidColorBrush = BrushFrom(propertyValue).as<winrt::SolidColorBrush>();
+      XamlDirectInstance::GetXamlDirect().SetColorProperty(element, propertyIndex, solidColorBrush.Color());
+    }
     else if (propertyValue.isNull())
       XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
 
@@ -150,7 +157,10 @@ static inline bool TryUpdateBorderProperties(ShadowNodeBase* node, XD::IXamlDire
   if (propertyName == "borderColor")
   {
     if (propertyValue.isNumber())
-      XamlDirectInstance::GetXamlDirect().SetObjectProperty(element, propertyIndex, winrt::box_value(BrushFrom(propertyValue)));
+    {
+      auto solidColorBrush = BrushFrom(propertyValue).as<winrt::SolidColorBrush>();
+      XamlDirectInstance::GetXamlDirect().SetColorProperty(element, propertyIndex, solidColorBrush.Color());
+    }
     else if (propertyValue.isNull())
       XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
   }
@@ -323,7 +333,7 @@ static inline bool TryUpdateFontProperties(XD::IXamlDirectObject element, const 
   else if (propertyName == "fontFamily")
   {
     if (propertyValue.isString())
-      XamlDirectInstance::GetXamlDirect().SetObjectProperty(element, propertyIndex,winrt::box_value(winrt::Windows::UI::Xaml::Media::FontFamily(asWStr(propertyValue))));
+      XamlDirectInstance::GetXamlDirect().SetStringProperty(element, propertyIndex, asHstring(propertyValue));
     else if (propertyValue.isNull())
       XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
   }
@@ -331,34 +341,7 @@ static inline bool TryUpdateFontProperties(XD::IXamlDirectObject element, const 
   {
     if (propertyValue.isString())
     {
-      const std::string& value = propertyValue.getString();
-      winrt::Windows::UI::Text::FontWeight fontWeight;
-      if (value == "normal")
-        fontWeight = winrt::Windows::UI::Text::FontWeights::Normal();
-      else if (value == "bold")
-        fontWeight = winrt::Windows::UI::Text::FontWeights::Bold();
-      else if (value == "100")
-        fontWeight.Weight = 100;
-      else if (value == "200")
-        fontWeight.Weight = 200;
-      else if (value == "300")
-        fontWeight.Weight = 300;
-      else if (value == "400")
-        fontWeight.Weight = 400;
-      else if (value == "500")
-        fontWeight.Weight = 500;
-      else if (value == "600")
-        fontWeight.Weight = 600;
-      else if (value == "700")
-        fontWeight.Weight = 700;
-      else if (value == "800")
-        fontWeight.Weight = 800;
-      else if (value == "900")
-        fontWeight.Weight = 900;
-      else
-        fontWeight = winrt::Windows::UI::Text::FontWeights::Normal();
-
-      XamlDirectInstance::GetXamlDirect().SetObjectProperty(element, propertyIndex, winrt::box_value(fontWeight));
+      XamlDirectInstance::GetXamlDirect().SetStringProperty(element, propertyIndex, asHstring(propertyValue));
     }
     else if (propertyValue.isNull())
     {
