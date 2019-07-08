@@ -68,11 +68,26 @@ void TextViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
     const std::string& propertyName = pair.first.getString();
     const folly::dynamic& propertyValue = pair.second;
 
+    winrt::XamlPropertyIndex fontPropIdx;
+
+    if (propertyName == "fontSize")
+    {
+      fontPropIdx = XD::XamlPropertyIndex::TextBlock_FontSize;
+    }
+    else if (propertyName == "fontFamily")
+    {
+      fontPropIdx = XD::XamlPropertyIndex::TextBlock_FontFamily;
+    }
+    else if (propertyName == "fontWeight")
+    {
+      fontPropIdx = XD::XamlPropertyIndex::TextBlock_FontWeight;
+    }
+
     if (TryUpdateForeground(textBlockXD, propertyName, propertyValue, winrt::XamlPropertyIndex::TextBlock_Foreground))
     {
       continue;
     }
-    else if (TryUpdateFontProperties(textBlockXD, propertyName, propertyValue))
+    else if (TryUpdateFontProperties(textBlockXD, propertyName, propertyValue, fontPropIdx))
     {
       continue;
     }

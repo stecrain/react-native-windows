@@ -52,13 +52,28 @@ void VirtualTextViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, cons
     const std::string& propertyName = pair.first.getString();
     const folly::dynamic& propertyValue = pair.second;
 
+    winrt::XamlPropertyIndex fontPropIdx;
+
+    if (propertyName == "fontSize")
+    {
+      fontPropIdx = XD::XamlPropertyIndex::TextElement_FontSize;
+    }
+    else if (propertyName == "fontFamily")
+    {
+      fontPropIdx = XD::XamlPropertyIndex::TextElement_FontFamily;
+    }
+    else if (propertyName == "fontWeight")
+    {
+      fontPropIdx = XD::XamlPropertyIndex::TextElement_FontWeight;
+    }
+
     // FUTURE: In the future cppwinrt will generate code where static methods on base types can
     // be called.  For now we specify the base type explicitly
     if (TryUpdateForeground(spanXD, propertyName, propertyValue, winrt::XamlPropertyIndex::TextElement_Foreground))
     {
       continue;
     }
-    else if (TryUpdateFontProperties(spanXD, propertyName, propertyValue))
+    else if (TryUpdateFontProperties(spanXD, propertyName, propertyValue, fontPropIdx))
     {
       continue;
     }

@@ -322,49 +322,40 @@ static inline bool TryUpdateCornerRadius(ShadowNodeBase* node, XD::IXamlDirectOb
   return true;
 }
 
-static inline bool TryUpdateFontProperties(XD::IXamlDirectObject elementXD, const std::string& propertyName, const folly::dynamic& propertyValue)
+static inline bool TryUpdateFontProperties(XD::IXamlDirectObject elementXD, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex xamlDirectPropIndex)
 {
   bool isFontProperty = true;
   auto element = XamlDirectInstance::GetXamlDirect().GetObject(elementXD);
 
   if (propertyName == "fontSize")
   {
-    auto fontSizePropXD = XD::XamlPropertyIndex::Control_FontSize;
-    if (typeid(element) == typeid(winrt::TextBlock))
-      fontSizePropXD = XD::XamlPropertyIndex::TextBlock_FontSize;
-    else if (typeid(element) == typeid(winrt::TextElement))
-      fontSizePropXD = XD::XamlPropertyIndex::TextElement_FontSize;
-
     if (propertyValue.isNumber())
       //element.FontSize(propertyValue.asDouble());
-      XamlDirectInstance::GetXamlDirect().SetDoubleProperty(elementXD, fontSizePropXD, propertyValue.asDouble());
+      XamlDirectInstance::GetXamlDirect().SetDoubleProperty(elementXD, xamlDirectPropIndex, propertyValue.asDouble());
     else if (propertyValue.isNull())
       //element.ClearValue(T::FontSizeProperty());
-      XamlDirectInstance::GetXamlDirect().ClearProperty(elementXD, fontSizePropXD);
+      XamlDirectInstance::GetXamlDirect().ClearProperty(elementXD, xamlDirectPropIndex);
   }
   else if (propertyName == "fontFamily")
   {
-    auto fontFamilyPropXD = XD::XamlPropertyIndex::Control_FontFamily;
-    if (typeid(element) == typeid(winrt::TextBlock))
-      fontFamilyPropXD = XD::XamlPropertyIndex::TextBlock_FontFamily;
-    else if (typeid(element) == typeid(winrt::TextElement))
-      fontFamilyPropXD = XD::XamlPropertyIndex::TextElement_FontFamily;
-
     if (propertyValue.isString())
       //element.FontFamily(winrt::Windows::UI::Xaml::Media::FontFamily(asWStr(propertyValue)));
-      XamlDirectInstance::GetXamlDirect().SetObjectProperty(elementXD, fontFamilyPropXD, winrt::box_value(winrt::Windows::UI::Xaml::Media::FontFamily(asWStr(propertyValue))));
+      XamlDirectInstance::GetXamlDirect().SetObjectProperty(
+        elementXD,
+        xamlDirectPropIndex,
+        winrt::box_value(winrt::Windows::UI::Xaml::Media::FontFamily(asWStr(propertyValue)))
+      );
     else if (propertyValue.isNull())
+
+
+
+
+
       //element.ClearValue(T::FontFamilyProperty());
-      XamlDirectInstance::GetXamlDirect().ClearProperty(elementXD, fontFamilyPropXD);
+      XamlDirectInstance::GetXamlDirect().ClearProperty(elementXD, xamlDirectPropIndex);
   }
   else if (propertyName == "fontWeight")
   {
-    auto fontWeightPropXD = XD::XamlPropertyIndex::Control_FontWeight;
-    if (typeid(element) == typeid(winrt::TextBlock))
-      fontWeightPropXD = XD::XamlPropertyIndex::TextBlock_FontWeight;
-    else if (typeid(element) == typeid(winrt::TextElement))
-      fontWeightPropXD = XD::XamlPropertyIndex::TextElement_FontWeight;
-
     if (propertyValue.isString())
     {
       const std::string& value = propertyValue.getString();
@@ -395,12 +386,12 @@ static inline bool TryUpdateFontProperties(XD::IXamlDirectObject elementXD, cons
         fontWeight = winrt::Windows::UI::Text::FontWeights::Normal();
 
       //element.FontWeight(fontWeight);
-      XamlDirectInstance::GetXamlDirect().SetObjectProperty(elementXD, fontWeightPropXD, winrt::box_value(fontWeight));
+      XamlDirectInstance::GetXamlDirect().SetObjectProperty(elementXD, xamlDirectPropIndex, winrt::box_value(fontWeight));
     }
     else if (propertyValue.isNull())
     {
       //element.ClearValue(T::FontWeightProperty());
-      XamlDirectInstance::GetXamlDirect().ClearProperty(elementXD, fontWeightPropXD);
+      XamlDirectInstance::GetXamlDirect().ClearProperty(elementXD, xamlDirectPropIndex);
     }
 
   }

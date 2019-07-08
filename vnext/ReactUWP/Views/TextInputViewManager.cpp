@@ -225,7 +225,22 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
     const std::string& propertyName = pair.first.getString();
     const folly::dynamic& propertyValue = pair.second;
 
-    if (TryUpdateFontProperties(controlXD, propertyName, propertyValue))
+    winrt::XamlPropertyIndex fontPropIdx;
+
+    if (propertyName == "fontSize")
+    {
+      fontPropIdx = XD::XamlPropertyIndex::Control_FontSize;
+    }
+    else if (propertyName == "fontFamily")
+    {
+      fontPropIdx = XD::XamlPropertyIndex::Control_FontFamily;
+    }
+    else if (propertyName == "fontWeight")
+    {
+      fontPropIdx = XD::XamlPropertyIndex::Control_FontWeight;
+    }
+
+    if (TryUpdateFontProperties(controlXD, propertyName, propertyValue, fontPropIdx))
     {
       continue;
     }
