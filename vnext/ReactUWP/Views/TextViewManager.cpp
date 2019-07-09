@@ -170,11 +170,13 @@ void TextViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
     {
       if (propertyValue.isNumber())
       {
-        auto solidColorBrush = SolidColorBrushFrom(propertyValue);
-        XamlDirectInstance::GetXamlDirect().SetColorProperty(
+        const auto propertyValueXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(
+          SolidColorBrushFrom(propertyValue)
+        );
+        XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(
           textBlockXD,
           XD::XamlPropertyIndex::TextBlock_SelectionHighlightColor,
-          solidColorBrush.Color()
+          propertyValueXD
         );
       }
       else

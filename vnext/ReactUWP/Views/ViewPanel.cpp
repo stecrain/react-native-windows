@@ -218,25 +218,28 @@ winrt::Size ViewPanel::ArrangeOverride(winrt::Size finalSize)
 
 void ViewPanel::InsertAt(uint32_t const index, winrt::UIElement const &value) const
 {
-  Children().InsertAt(index, value);
+  const auto childrenXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(Children());
+  const auto valueXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(value);
+  XamlDirectInstance::GetXamlDirect().InsertIntoCollectionAt(childrenXD, index, valueXD);
 }
 
 void ViewPanel::RemoveAt(uint32_t const index) const
 {
-  Children().RemoveAt(index);
+  const auto childrenXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(Children());
+  XamlDirectInstance::GetXamlDirect().RemoveFromCollectionAt(childrenXD, index);
 }
 
 void ViewPanel::Remove(winrt::UIElement element) const
 {
-  uint32_t index;
-
-  if (Children().IndexOf(element, index))
-    Children().RemoveAt(index);
+  const auto childrenXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(Children());
+  const auto elementXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(element);
+  XamlDirectInstance::GetXamlDirect().RemoveFromCollection(childrenXD, elementXD);
 }
 
 void ViewPanel::Clear() const
 {
-  Children().Clear();
+  const auto childrenXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(Children());
+  XamlDirectInstance::GetXamlDirect().ClearCollection(childrenXD);
 }
 
 void ViewPanel::ViewBackground(winrt::Brush const &value)
@@ -322,22 +325,29 @@ void ViewPanel::FinalizeProperties()
     // Ensure Border is created
     if (m_border == nullptr)
     {
-      m_border = winrt::Border();
-
       // Add border as the top child if using as inner border
       if (scenario == Scenario::InnerBorder)
-        Children().Append(m_border);      
+      {
+        const auto childrenXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(Children());
+        XamlDirectInstance::GetXamlDirect().AddToCollection(childrenXD, m_borderXD);
+      }
+    }
+    else
+    {
+      m_borderXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(m_border);
     }
 
-    m_borderXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(m_border);
 
     // TODO: Can Binding be used here?
     if (hasBorderBrush)
-      XamlDirectInstance::GetXamlDirect().SetColorProperty(
+    {
+      const auto borderBrushXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(BorderBrush());
+      XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(
         m_borderXD,
         XD::XamlPropertyIndex::Border_BorderBrush,
-        BorderBrush().as<winrt::SolidColorBrush>().Color()
+        borderBrushXD
       );
+    }
     else
       XamlDirectInstance::GetXamlDirect().ClearProperty(
         m_borderXD,
@@ -380,11 +390,14 @@ void ViewPanel::FinalizeProperties()
     m_borderXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(m_border);
 
     if (hasBackground)
-      XamlDirectInstance::GetXamlDirect().SetColorProperty(
+    {
+      const auto viewBackgroundXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(ViewBackground());
+      XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(
         m_borderXD,
         XD::XamlPropertyIndex::Border_Background,
-        ViewBackground().as<winrt::SolidColorBrush>().Color()
+        viewBackgroundXD
       );
+    }
     else
       XamlDirectInstance::GetXamlDirect().ClearProperty(
         m_borderXD,

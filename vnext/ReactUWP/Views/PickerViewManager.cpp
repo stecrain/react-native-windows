@@ -202,11 +202,11 @@ void PickerShadowNode::RepopulateItems()
       );
       if (item.count("textColor"))
       {
-          auto brush = BrushFrom(item["textColor"]).as<winrt::SolidColorBrush>();
-          XamlDirectInstance::GetXamlDirect().SetColorProperty(
+          const auto propertyValueXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(BrushFrom(item["textColor"]));
+          XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(
             comboboxItem,
             XD::XamlPropertyIndex::Control_Foreground,
-            brush.Color()
+            propertyValueXD
           );
       }
       auto items = XamlDirectInstance::GetXamlDirect().GetObject(comboboxItemsXD).as<winrt::ItemCollection>();
