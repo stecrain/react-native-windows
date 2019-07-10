@@ -243,7 +243,11 @@ XamlView ViewViewManager::CreateViewControl(int64_t tag)
 XamlView ViewViewManager::CreateViewCore(int64_t tag)
 {
   auto panel = winrt::make<winrt::react::uwp::implementation::ViewPanel>();
-  panel.VerticalAlignment(winrt::VerticalAlignment::Top);
+  XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+    XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(panel),
+    XD::XamlPropertyIndex::FrameworkElement_VerticalAlignment,
+    static_cast<int32_t>(winrt::VerticalAlignment::Top)
+  );
 
   DynamicAutomationProperties::SetAccessibilityInvokeEventHandler(panel, [=]()
   {
@@ -303,9 +307,16 @@ void ViewViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
       if (propertyName == "backgroundColor")
       {
         if (propertyValue.isNumber())
-          pPanel.ViewBackground(BrushFrom(propertyValue));
+          XamlDirectInstance::GetXamlDirect().SetColorProperty(
+            pPanelXD,
+            XD::XamlPropertyIndex::Panel_Background,
+            SolidColorBrushFrom(propertyValue).Color()
+          );
         else if (propertyValue.isNull())
-          pPanel.ClearValue(ViewPanel::ViewBackgroundProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(
+            pPanelXD,
+            XD::XamlPropertyIndex::Panel_Background
+          );
       }
       else if (TryUpdateBorderProperties(nodeToUpdate, pPanelXD, propertyName, propertyValue, borderPropXD))
       {
@@ -336,7 +347,11 @@ void ViewViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
         if (propertyValue.isString())
         {
           bool hitTestable = propertyValue.getString() != "none";
-          pPanel.IsHitTestVisible(hitTestable);
+          XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+            pPanelXD,
+            XD::XamlPropertyIndex::UIElement_IsHitTestVisible,
+            hitTestable
+          );
         }
       }
       else if (propertyName == "acceptsKeyboardFocus")
@@ -483,9 +498,9 @@ void ViewViewManager::SetLayoutProps(ShadowNodeBase& nodeToUpdate, XamlView view
   auto* pViewShadowNode = static_cast<ViewShadowNode*>(&nodeToUpdate);
   if (pViewShadowNode->IsControl())
   {
-    auto pPanel = pViewShadowNode->GetViewPanel();
-    pPanel.Width(width);
-    pPanel.Height(height);
+    auto pPanelXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(pViewShadowNode->GetViewPanel());
+    XamlDirectInstance::GetXamlDirect().SetDoubleProperty(pPanelXD, XD::XamlPropertyIndex::FrameworkElement_Width, width);
+    XamlDirectInstance::GetXamlDirect().SetDoubleProperty(pPanelXD, XD::XamlPropertyIndex::FrameworkElement_Height, height);
   }
 
   Super::SetLayoutProps(nodeToUpdate, viewToUpdate, left, top, width, height);

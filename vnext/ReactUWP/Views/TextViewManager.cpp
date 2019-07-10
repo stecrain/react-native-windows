@@ -51,7 +51,11 @@ const char* TextViewManager::GetName() const
 XamlView TextViewManager::CreateViewCore(int64_t tag)
 {
   auto textBlock = winrt::TextBlock();
-  textBlock.TextWrapping(winrt::TextWrapping::Wrap); // Default behavior in React Native
+  XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+    XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(textBlock),
+    XD::XamlPropertyIndex::TextBlock_TextWrapping,
+    static_cast<int32_t>(winrt::TextWrapping::Wrap)
+  );
   return textBlock;
 }
 
@@ -170,13 +174,10 @@ void TextViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
     {
       if (propertyValue.isNumber())
       {
-        const auto propertyValueXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(
-          SolidColorBrushFrom(propertyValue)
-        );
-        XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(
+        XamlDirectInstance::GetXamlDirect().SetColorProperty(
           textBlockXD,
           XD::XamlPropertyIndex::TextBlock_SelectionHighlightColor,
-          propertyValueXD
+          SolidColorBrushFrom(propertyValue).Color()
         );
       }
       else

@@ -332,11 +332,10 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
 
         if (propertyValue.isNumber())
         {
-          const auto propertyValueXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(SolidColorBrushFrom(propertyValue));
-          XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(
+          XamlDirectInstance::GetXamlDirect().SetColorProperty(
             textBoxXD,
             XD::XamlPropertyIndex::TextBox_PlaceholderForeground,
-            propertyValueXD
+            SolidColorBrushFrom(propertyValue).Color()
           );
         }
         else if (propertyValue.isNull())
@@ -377,11 +376,10 @@ void TextInputShadowNode::updateProperties(const folly::dynamic&& props)
     {      
       if (propertyValue.isNumber())
       {
-        const auto propertyValueXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(SolidColorBrushFrom(propertyValue));
-        XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(
+        XamlDirectInstance::GetXamlDirect().SetColorProperty(
           textBoxXD,
           XD::XamlPropertyIndex::TextBox_SelectionHighlightColor,
-          propertyValueXD
+          SolidColorBrushFrom(propertyValue).Color()
         );
       }
       else if (propertyValue.isNull())

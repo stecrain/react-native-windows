@@ -341,11 +341,10 @@ void ViewPanel::FinalizeProperties()
     // TODO: Can Binding be used here?
     if (hasBorderBrush)
     {
-      const auto borderBrushXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(BorderBrush());
-      XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(
+      XamlDirectInstance::GetXamlDirect().SetColorProperty(
         m_borderXD,
         XD::XamlPropertyIndex::Border_BorderBrush,
-        borderBrushXD
+        BorderBrush().as<winrt::SolidColorBrush>().Color()
       );
     }
     else
@@ -391,11 +390,10 @@ void ViewPanel::FinalizeProperties()
 
     if (hasBackground)
     {
-      const auto viewBackgroundXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(ViewBackground());
-      XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(
+      XamlDirectInstance::GetXamlDirect().SetColorProperty(
         m_borderXD,
         XD::XamlPropertyIndex::Border_Background,
-        viewBackgroundXD
+        ViewBackground().as<winrt::SolidColorBrush>().Color()
       );
     }
     else

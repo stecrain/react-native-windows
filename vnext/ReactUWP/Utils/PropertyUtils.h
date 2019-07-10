@@ -103,8 +103,7 @@ static inline void SetBorderThickness(ShadowNodeBase* node, XD::IXamlDirectObjec
 
 static inline void SetBorderBrush(XD::IXamlDirectObject element, const winrt::Windows::UI::Xaml::Media::Brush& brush, XD::XamlPropertyIndex propertyIndex)
 {
-  const auto propertyValueXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(brush);
-  XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(element, propertyIndex, propertyValueXD);
+  XamlDirectInstance::GetXamlDirect().SetColorProperty(element, propertyIndex, brush.as<winrt::SolidColorBrush>().Color());
 }
 
 static inline bool TryUpdateBackgroundBrush(XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
@@ -113,8 +112,11 @@ static inline bool TryUpdateBackgroundBrush(XD::IXamlDirectObject element, const
   {
     if (propertyValue.isNumber())
     {
-      const auto propertyValueXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(BrushFrom(propertyValue));
-      XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(element, propertyIndex, propertyValueXD);
+      XamlDirectInstance::GetXamlDirect().SetColorProperty(
+        element,
+        propertyIndex,
+        SolidColorBrushFrom(propertyValue).Color()
+      );
     }
     else if (propertyValue.isNull())
       XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
@@ -138,8 +140,11 @@ static inline bool TryUpdateForeground(XD::IXamlDirectObject element, const std:
   {
     if (propertyValue.isNumber())
     {
-      const auto propertyValueXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(SolidColorBrushFrom(propertyValue));
-      XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(element, propertyIndex, propertyValueXD);
+      XamlDirectInstance::GetXamlDirect().SetColorProperty(
+        element,
+        propertyIndex,
+        SolidColorBrushFrom(propertyValue).Color()
+      );
     }
     else if (propertyValue.isNull())
       XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
@@ -158,8 +163,11 @@ static inline bool TryUpdateBorderProperties(ShadowNodeBase* node, XD::IXamlDire
   {
     if (propertyValue.isNumber())
     {
-      const auto propertyValueXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(SolidColorBrushFrom(propertyValue));
-      XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(element, propertyIndex, propertyValueXD);
+      XamlDirectInstance::GetXamlDirect().SetColorProperty(
+        element,
+        propertyIndex,
+        SolidColorBrushFrom(propertyValue).Color()
+      );
     }
     else if (propertyValue.isNull())
       XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
