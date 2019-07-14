@@ -6,10 +6,12 @@
 #include "ViewViewManager.h"
 
 #include "ViewControl.h"
-#include "ViewPanel.h"
+
+#include "DynamicAutomationProperties.h"
 
 #include <Modules/NativeUIManager.h>
 #include <Utils/PropertyUtils.h>
+#include <Utils/AccessibilityUtils.h>
 
 #include <INativeUIManager.h>
 #include <IReactInstance.h>
@@ -19,6 +21,8 @@
 #include <winrt/Windows.UI.Xaml.Input.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
 #include <winrt/Windows.System.h>
+
+#include <XamlDirectInstance.h>
 
 #if defined(_DEBUG)
 // Currently only used for tagging controls in debug
@@ -58,7 +62,7 @@ public:
     m_enableFocusRing = enable;
 
     if (IsControl())
-      GetControl()->UseSystemFocusVisuals(m_enableFocusRing);
+      GetControl().UseSystemFocusVisuals(m_enableFocusRing);
   }
 
   int32_t TabIndex() { return m_tabIndex; }
@@ -67,40 +71,41 @@ public:
     m_tabIndex = tabIndex;
 
     if (IsControl())
-      GetControl()->TabIndex(m_tabIndex);
+      GetControl().TabIndex(m_tabIndex);
   }
 
   bool OnClick() { return m_onClick; }
   void OnClick(bool isSet) { m_onClick = isSet; }
 
-  AccessibilityRoles AccessibilityRole() { return m_accessibilityRole; }
-  void AccessibilityRole(AccessibilityRoles role)
-  {
-    m_accessibilityRole = role;
-    if (IsControl())
-      GetControl()->AccessibilityRole(role);
-  }
-
-  bool AccessibilityState(AccessibilityStates state) { return m_accessibilityStates[state]; }
-  void AccessibilityState(AccessibilityStates state, bool value)
-  {
-    m_accessibilityStates[state] = value;
-  }
-
   void AddView(ShadowNode& child, int64_t index) override
   {
-    GetViewPanel()->InsertAt(static_cast<uint32_t>(index), static_cast<ShadowNodeBase&>(child).GetView().as<winrt::UIElement>());
+    GetViewPanel().InsertAt(static_cast<uint32_t>(index), static_cast<ShadowNodeBase&>(child).GetView().as<winrt::UIElement>());
   }
 
   void RemoveChildAt(int64_t indexToRemove) override
   {
     if (indexToRemove == static_cast<uint32_t>(indexToRemove))
-      GetViewPanel()->RemoveAt(static_cast<uint32_t>(indexToRemove));
+      GetViewPanel().RemoveAt(static_cast<uint32_t>(indexToRemove));
   }
 
   void removeAllChildren() override
   {
-    GetViewPanel()->Clear();
+    GetViewPanel().Clear();
+
+    XamlView current = m_view;
+
+    if (IsControl())
+    {
+      auto control = m_view.as<winrt::ContentControl>();
+      current = control.Content().as<XamlView>();
+      control.Content(nullptr);
+    }
+
+    if (HasOuterBorder())
+    {
+      auto border = current.try_as<winrt::Border>();
+      border.Child(nullptr);
+    }
   }
 
   void ReplaceChild(XamlView oldChildView, XamlView newChildView) override
@@ -109,10 +114,10 @@ public:
     if (pPanel != nullptr)
     {
       uint32_t index;
-      if (pPanel->Children().IndexOf(oldChildView.as<winrt::UIElement>(), index))
+      if (pPanel.Children().IndexOf(oldChildView.as<winrt::UIElement>(), index))
       {
-        pPanel->RemoveAt(index);
-        pPanel->InsertAt(index, newChildView.as<winrt::UIElement>());
+        pPanel.RemoveAt(index);
+        pPanel.InsertAt(index, newChildView.as<winrt::UIElement>());
       }
       else
       {
@@ -124,15 +129,12 @@ public:
   void RefreshProperties()
   {
     // The view may have been replaced, so transfer properties stored on the shadow node to the view
-    AccessibilityRole(AccessibilityRole());
-    AccessibilityState(AccessibilityStates::Disabled, AccessibilityState(AccessibilityStates::Disabled));
-    AccessibilityState(AccessibilityStates::Selected, AccessibilityState(AccessibilityStates::Selected));
     EnableFocusRing(EnableFocusRing());
     TabIndex(TabIndex());
     static_cast<FrameworkElementViewManager*>(GetViewManager())->RefreshTransformMatrix(this);
   }
 
-  winrt::com_ptr<ViewPanel> GetViewPanel()
+  winrt::react::uwp::ViewPanel GetViewPanel()
   {
     XamlView current = m_view;
 
@@ -148,15 +150,15 @@ public:
       current = border.Child().try_as<XamlView>();
     }
 
-    auto panel = current.try_as<ViewPanel>();
+    auto panel = current.try_as<winrt::react::uwp::ViewPanel>();
     assert(panel != nullptr);
 
-    return std::move(panel);
+    return panel;
   }
 
-  winrt::impl::com_ref<react::uwp::ViewControl> GetControl()
+  winrt::react::uwp::ViewControl GetControl()
   {
-    return IsControl() ? m_view.as<ViewControl>() : nullptr;
+    return IsControl() ? m_view.as<winrt::react::uwp::ViewControl>() : nullptr;
   }
 
 private:
@@ -166,8 +168,6 @@ private:
   bool m_enableFocusRing = true;
   bool m_onClick = false;
   int32_t m_tabIndex = std::numeric_limits<std::int32_t>::max();
-  AccessibilityRoles m_accessibilityRole = AccessibilityRoles::None;
-  bool m_accessibilityStates[AccessibilityStates::CountStates] = { false, false };
 };
 
 
@@ -205,19 +205,19 @@ void ViewViewManager::DispatchEvent(int64_t viewTag, std::string eventName, foll
 XamlView ViewViewManager::CreateViewControl(int64_t tag)
 {
   // Create the ViewControl as the outer/containing element, nest the ViewPanel, set default properties
-  auto contentControlPtr = ViewControl::Create();
+  auto contentControl = winrt::make<winrt::react::uwp::implementation::ViewControl>();
 
-  contentControlPtr->GotFocus([=](auto &&, auto &&)
+  contentControl.GotFocus([=](auto &&, auto &&)
   {
     DispatchEvent(tag, "topFocus", std::move(folly::dynamic::object("target", tag)));
   });
 
-  contentControlPtr->LostFocus([=](auto &&, auto &&)
+  contentControl.LostFocus([=](auto &&, auto &&)
   {
     DispatchEvent(tag, "topBlur", std::move(folly::dynamic::object("target", tag)));
   });
 
-  contentControlPtr->KeyDown([=](auto &&, winrt::KeyRoutedEventArgs const& e)
+  contentControl.KeyDown([=](auto &&, winrt::KeyRoutedEventArgs const& e)
   {
     if (e.Key() == winrt::VirtualKey::Enter || e.Key() == winrt::VirtualKey::Space)
     {
@@ -237,7 +237,19 @@ XamlView ViewViewManager::CreateViewControl(int64_t tag)
     }
   });
 
-  contentControlPtr->AccessibilityInvoke([=]()
+  return contentControl.try_as<XamlView>();
+}
+
+XamlView ViewViewManager::CreateViewCore(int64_t tag)
+{
+  auto panel = winrt::make<winrt::react::uwp::implementation::ViewPanel>();
+  XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+    XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(panel),
+    XD::XamlPropertyIndex::FrameworkElement_VerticalAlignment,
+    static_cast<int32_t>(winrt::VerticalAlignment::Top)
+  );
+
+  DynamicAutomationProperties::SetAccessibilityInvokeEventHandler(panel, [=]()
   {
     auto instance = m_wkReactInstance.lock();
     if (instance != nullptr)
@@ -252,15 +264,6 @@ XamlView ViewViewManager::CreateViewControl(int64_t tag)
         DispatchEvent(tag, "topAccessibilityTap", std::move(folly::dynamic::object("target", tag)));
     }
   });
-
-  return contentControlPtr->try_as<XamlView>();
-}
-
-XamlView ViewViewManager::CreateViewCore(int64_t tag)
-{
-  XamlView newViewPanelXamlView(ViewPanel::Create().as<XamlView>());
-  auto panel = newViewPanelXamlView.as<ViewPanel>();
-  panel->VerticalAlignment(winrt::VerticalAlignment::Top);
 
   return panel.as<XamlView>();
 }
@@ -294,21 +297,32 @@ void ViewViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
   auto pPanel = pViewShadowNode->GetViewPanel();
   if (pPanel != nullptr)
   {
+    auto pPanelXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(pPanel);
     for (const auto& pair : reactDiffMap.items())
     {
       const std::string& propertyName = pair.first.getString();
       const folly::dynamic& propertyValue = pair.second;
+      auto borderPropXD = propertyName == "borderColor" ? XD::XamlPropertyIndex::RelativePanel_BorderBrush : XD::XamlPropertyIndex::RelativePanel_BorderThickness;
 
-      if (TryUpdateBackgroundBrush(*pPanel, propertyName, propertyValue))
+      if (propertyName == "backgroundColor")
+      {
+        if (propertyValue.isNumber())
+          XamlDirectInstance::GetXamlDirect().SetColorProperty(
+            pPanelXD,
+            XD::XamlPropertyIndex::Panel_Background,
+            SolidColorBrushFrom(propertyValue).Color()
+          );
+        else if (propertyValue.isNull())
+          XamlDirectInstance::GetXamlDirect().ClearProperty(
+            pPanelXD,
+            XD::XamlPropertyIndex::Panel_Background
+          );
+      }
+      else if (TryUpdateBorderProperties(nodeToUpdate, pPanelXD, propertyName, propertyValue, borderPropXD))
       {
         continue;
       }
-      else
-      if (TryUpdateBorderProperties(nodeToUpdate, *pPanel, propertyName, propertyValue))
-      {
-        continue;
-      }
-      else if (TryUpdateCornerRadius(nodeToUpdate, *pPanel, propertyName, propertyValue))
+      else if (TryUpdateCornerRadius(nodeToUpdate, pPanelXD, propertyName, propertyValue, XD::XamlPropertyIndex::RelativePanel_CornerRadius))
       {
         continue;
       }
@@ -325,7 +339,7 @@ void ViewViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
         if (propertyValue.isString())
         {
           bool clipChildren = propertyValue.getString() == "hidden";
-          pPanel->ClipChildren(clipChildren);
+          pPanel.ClipChildren(clipChildren);
         }
       }
       else if (propertyName == "pointerEvents")
@@ -333,72 +347,17 @@ void ViewViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
         if (propertyValue.isString())
         {
           bool hitTestable = propertyValue.getString() != "none";
-          pPanel->IsHitTestVisible(hitTestable);
+          XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+            pPanelXD,
+            XD::XamlPropertyIndex::UIElement_IsHitTestVisible,
+            hitTestable
+          );
         }
       }
       else if (propertyName == "acceptsKeyboardFocus")
       {
         if (propertyValue.isBool())
           shouldBeControl = propertyValue.getBool();
-      }
-      else if (propertyName == "accessibilityRole")
-      {
-        // FUTURE having an accessibilityRole shouldBeControl to support
-        // non-Touchable scenarios
-        if (propertyValue.isString())
-        {
-          const std::string& role = propertyValue.getString();
-          if (role == "none")
-            pViewShadowNode->AccessibilityRole(AccessibilityRoles::None);
-          else if (role == "button")
-            pViewShadowNode->AccessibilityRole(AccessibilityRoles::Button);
-          else if (role == "link")
-            pViewShadowNode->AccessibilityRole(AccessibilityRoles::Link);
-          else if (role == "search")
-            pViewShadowNode->AccessibilityRole(AccessibilityRoles::Search);
-          else if (role == "image")
-            pViewShadowNode->AccessibilityRole(AccessibilityRoles::Image);
-          else if (role == "keyboardkey")
-            pViewShadowNode->AccessibilityRole(AccessibilityRoles::KeyboardKey);
-          else if (role == "text")
-            pViewShadowNode->AccessibilityRole(AccessibilityRoles::Text);
-          else if (role == "adjustable")
-            pViewShadowNode->AccessibilityRole(AccessibilityRoles::Adjustable);
-          else if (role == "imagebutton")
-            pViewShadowNode->AccessibilityRole(AccessibilityRoles::ImageButton);
-          else if (role == "header")
-            pViewShadowNode->AccessibilityRole(AccessibilityRoles::Header);
-          else if (role == "summary")
-            pViewShadowNode->AccessibilityRole(AccessibilityRoles::Summary);
-          else
-            pViewShadowNode->AccessibilityRole(AccessibilityRoles::Unknown);
-        }
-        else if (propertyValue.isNull())
-        {
-          pViewShadowNode->AccessibilityRole(AccessibilityRoles::None);
-        }
-      }
-      else if (propertyName == "accessibilityStates")
-      {
-        // FUTURE having an accessibilityStates shouldBeControl to support
-        // non-Touchable scenarios
-        bool disabled = false;
-        bool selected = false;
-        if (propertyValue.isArray())
-        {
-          for (const auto& state : propertyValue)
-          {
-            if (!state.isString())
-              continue;
-            if (state.getString() == "disabled")
-              disabled = true;
-            else if (state.getString() == "selected")
-              selected = true;
-          }
-        }
-
-        pViewShadowNode->AccessibilityState(AccessibilityStates::Disabled, disabled);
-        pViewShadowNode->AccessibilityState(AccessibilityStates::Selected, selected);
       }
       else if (propertyName == "enableFocusRing")
       {
@@ -425,18 +384,18 @@ void ViewViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const folly
 
   Super::UpdateProperties(nodeToUpdate, reactDiffMap);
 
-  pPanel->FinalizeProperties();
+  pPanel.FinalizeProperties();
 
-  TryUpdateView(pViewShadowNode, pPanel.get(), shouldBeControl);
+  TryUpdateView(pViewShadowNode, pPanel, shouldBeControl);
 }
 
-void ViewViewManager::TryUpdateView(ViewShadowNode* pViewShadowNode, ViewPanel* pPanel, bool useControl)
+void ViewViewManager::TryUpdateView(ViewShadowNode* pViewShadowNode, winrt::react::uwp::ViewPanel& pPanel, bool useControl)
 {
   auto instance = m_wkReactInstance.lock();
   if (instance == nullptr)
     return;
 
-  bool hasOuterBorder = pPanel->GetOuterBorder() != nullptr;
+  bool hasOuterBorder = pPanel.GetOuterBorder() != nullptr;
 
   // This short-circuits all of the update code when we have the same hierarchy
   if (!pViewShadowNode->ShouldUpdateView(useControl, hasOuterBorder))
@@ -465,25 +424,25 @@ void ViewViewManager::TryUpdateView(ViewShadowNode* pViewShadowNode, ViewPanel* 
   }
   else if (pViewShadowNode->IsControl())
   {
-    pViewShadowNode->GetControl()->Content(nullptr);
+    pViewShadowNode->GetControl().Content(nullptr);
   }
 
   // 2. If need outer border decide if it's our new root, else clean up old outer border
   if (hasOuterBorder)
   {
     if (!useControl)
-      newXamlView = pPanel->GetOuterBorder().try_as<XamlView>();
+      newXamlView = pPanel.GetOuterBorder().try_as<XamlView>();
   }
   else if (pViewShadowNode->HasOuterBorder())
   {
-    winrt::Border outerBorder = pPanel->GetOuterBorder();
+    winrt::Border outerBorder = pPanel.GetOuterBorder();
     if (outerBorder.Child() != nullptr)
-      outerBorder.Child(pPanel->try_as<winrt::UIElement>());
+      outerBorder.Child(pPanel.try_as<winrt::UIElement>());
   }
 
   // 3. Determine if the ViewPanel itself should be our root
   if (!useControl && !hasOuterBorder)
-    newXamlView = pPanel->try_as<XamlView>();
+    newXamlView = pPanel.try_as<XamlView>();
 
   // ASSERT: One of the three scenarios should be true and we should have a root to use
   assert(newXamlView != nullptr);
@@ -492,7 +451,7 @@ void ViewViewManager::TryUpdateView(ViewShadowNode* pViewShadowNode, ViewPanel* 
   TransferProperties(oldXamlView, newXamlView);
 
   // Since we transferred properties to the new view we need to make the call to finalize
-  pPanel->FinalizeProperties();
+  pPanel.FinalizeProperties();
 
   // Update the meta-data in the shadow node
   pViewShadowNode->IsControl(useControl);
@@ -517,19 +476,19 @@ void ViewViewManager::TryUpdateView(ViewShadowNode* pViewShadowNode, ViewPanel* 
   }
 
   // Ensure parenting is setup properly
-  auto visualRoot = pPanel->try_as<winrt::UIElement>();
+  auto visualRoot = pPanel.try_as<winrt::UIElement>();
 
   if (hasOuterBorder)
   {
-    winrt::Border outerBorder = pPanel->GetOuterBorder();
+    winrt::Border outerBorder = pPanel.GetOuterBorder();
     if (outerBorder.Child() == nullptr)
-      outerBorder.Child(pPanel->try_as<winrt::UIElement>());
+      outerBorder.Child(pPanel.try_as<winrt::UIElement>());
 
     visualRoot = outerBorder;
   }
 
   if (useControl)
-    pViewShadowNode->GetControl()->Content(visualRoot);
+    pViewShadowNode->GetControl().Content(visualRoot);
 }
 
 void ViewViewManager::SetLayoutProps(ShadowNodeBase& nodeToUpdate, XamlView viewToUpdate, float left, float top, float width, float height)
@@ -539,9 +498,9 @@ void ViewViewManager::SetLayoutProps(ShadowNodeBase& nodeToUpdate, XamlView view
   auto* pViewShadowNode = static_cast<ViewShadowNode*>(&nodeToUpdate);
   if (pViewShadowNode->IsControl())
   {
-    auto pPanel = pViewShadowNode->GetViewPanel();
-    pPanel->Width(width);
-    pPanel->Height(height);
+    auto pPanelXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(pViewShadowNode->GetViewPanel());
+    XamlDirectInstance::GetXamlDirect().SetDoubleProperty(pPanelXD, XD::XamlPropertyIndex::FrameworkElement_Width, width);
+    XamlDirectInstance::GetXamlDirect().SetDoubleProperty(pPanelXD, XD::XamlPropertyIndex::FrameworkElement_Height, height);
   }
 
   Super::SetLayoutProps(nodeToUpdate, viewToUpdate, left, top, width, height);

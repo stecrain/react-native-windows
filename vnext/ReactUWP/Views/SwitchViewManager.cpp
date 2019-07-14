@@ -10,6 +10,8 @@
 
 #include <winrt/Windows.UI.Xaml.Controls.Primitives.h>
 
+#include <XamlDirectInstance.h>
+
 namespace winrt {
   using namespace Windows::UI::Xaml;
   using namespace Windows::UI::Xaml::Controls;
@@ -98,6 +100,8 @@ void SwitchViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const fol
   if (toggleSwitch == nullptr)
     return;
 
+  auto toggleSwitchXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(toggleSwitch);
+
   for (const auto& pair : reactDiffMap.items())
   {
     const std::string& propertyName = pair.first.getString();
@@ -106,16 +110,30 @@ void SwitchViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const fol
    if (propertyName == "disabled")
    {
       if (propertyValue.isBool())
-        toggleSwitch.IsEnabled(!propertyValue.asBool());
+        XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+          toggleSwitchXD,
+          XD::XamlPropertyIndex::Control_IsEnabled,
+          !propertyValue.asBool()
+        );
       else if (pair.second.isNull())
-        toggleSwitch.ClearValue(winrt::Control::IsEnabledProperty());
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          toggleSwitchXD,
+          XD::XamlPropertyIndex::Control_IsEnabled
+        );
    }
    else if (propertyName == "value")
    {
      if (propertyValue.isBool())
-       toggleSwitch.IsOn(propertyValue.asBool());
+       XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+         toggleSwitchXD,
+         XD::XamlPropertyIndex::ToggleSwitch_IsOn,
+         propertyValue.asBool()
+       );
      else if (pair.second.isNull())
-       toggleSwitch.ClearValue(winrt::ToggleSwitch::IsOnProperty());
+       XamlDirectInstance::GetXamlDirect().ClearProperty(
+         toggleSwitchXD,
+         XD::XamlPropertyIndex::ToggleSwitch_IsOn
+       );
    }
   }
 

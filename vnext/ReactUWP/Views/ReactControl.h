@@ -9,7 +9,7 @@
 #include "IXamlRootView.h"
 #include <IReactInstance.h>
 #include "TouchEventHandler.h"
-#include <winrt/Windows.UI.Xaml.Controls.h>
+#include "Views/KeyboardEventHandler.h"
 
 namespace winrt {
 using namespace Windows::UI;
@@ -62,6 +62,7 @@ private:
   std::shared_ptr<facebook::react::NativeModuleProvider> m_moduleProvider;
   folly::dynamic m_initialProps;
   std::shared_ptr<TouchEventHandler> m_touchEventHandler;
+  std::shared_ptr<PreviewKeyboardEventHandlerOnRoot> m_previewKeyboardEventHandlerOnRoot;
 
   int64_t m_rootTag = -1;
   XamlView m_xamlRootView;

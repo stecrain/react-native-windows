@@ -13,11 +13,15 @@
 #include <winrt/Windows.UI.Xaml.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
+#include <XamlDirectInstance.h>
 
 #include <Views/ShadowNodeBase.h>
 
+#include <Views/ViewPanel.h>
+
 namespace winrt {
 using namespace Windows::UI::Xaml;
+using namespace Windows::UI::Xaml::Documents;
 }
 
 namespace react { namespace uwp {
@@ -78,37 +82,44 @@ inline winrt::Windows::UI::Xaml::CornerRadius GetCornerRadius(double cornerRadii
   return cornerRadius;
 }
 
-template <class T>
-void UpdatePadding(ShadowNodeBase* node, const T& element, ShadowEdges edge, double margin)
+inline bool IsFlowRTL(const XD::IXamlDirectObject& element)
+{
+  return XamlDirectInstance::GetXamlDirect().GetEnumProperty(element, XD::XamlPropertyIndex::FrameworkElement_FlowDirection) == static_cast<uint32_t>(winrt::FlowDirection::RightToLeft);
+}
+
+static inline void UpdatePadding(ShadowNodeBase* node, XD::IXamlDirectObject element, ShadowEdges edge, double margin, XD::XamlPropertyIndex propertyIndex)
 {
   node->m_padding[edge] = margin;
-  winrt::Thickness thickness = GetThickness(node->m_padding, element.FlowDirection() == winrt::FlowDirection::RightToLeft);
-  element.Padding(thickness);
+  winrt::Thickness thickness = GetThickness(node->m_padding, IsFlowRTL(element));
+  XamlDirectInstance::GetXamlDirect().SetThicknessProperty(element, propertyIndex, thickness);
 }
 
-template <class T>
-void SetBorderThickness(ShadowNodeBase* node, T& element, ShadowEdges edge, double margin)
+static inline void SetBorderThickness(ShadowNodeBase* node, XD::IXamlDirectObject element, ShadowEdges edge, double margin, XD::XamlPropertyIndex propertyIndex)
 {
   node->m_border[edge] = margin;
-  winrt::Thickness thickness = GetThickness(node->m_border, element.FlowDirection() == winrt::FlowDirection::RightToLeft);
-  element.BorderThickness(thickness);
+  winrt::Thickness thickness = GetThickness(node->m_border, IsFlowRTL(element));
+  XamlDirectInstance::GetXamlDirect().SetThicknessProperty(element, propertyIndex, thickness);
 }
 
-template <class T>
-void SetBorderBrush(const T& element, const winrt::Windows::UI::Xaml::Media::Brush& brush)
+static inline void SetBorderBrush(XD::IXamlDirectObject element, const winrt::Windows::UI::Xaml::Media::Brush& brush, XD::XamlPropertyIndex propertyIndex)
 {
-  element.BorderBrush(brush);
+  XamlDirectInstance::GetXamlDirect().SetColorProperty(element, propertyIndex, brush.as<winrt::SolidColorBrush>().Color());
 }
 
-template <class T>
-bool TryUpdateBackgroundBrush(T& element, const std::string& propertyName, const folly::dynamic& propertyValue)
+static inline bool TryUpdateBackgroundBrush(XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
 {
   if (propertyName == "backgroundColor")
   {
     if (propertyValue.isNumber())
-      element.Background(BrushFrom(propertyValue));
+    {
+      XamlDirectInstance::GetXamlDirect().SetColorProperty(
+        element,
+        propertyIndex,
+        SolidColorBrushFrom(propertyValue).Color()
+      );
+    }
     else if (propertyValue.isNull())
-      element.ClearValue(T::BackgroundProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
 
     return true;
   }
@@ -116,23 +127,27 @@ bool TryUpdateBackgroundBrush(T& element, const std::string& propertyName, const
   return false;
 }
 
-template <class T>
-void UpdateCornerRadius(ShadowNodeBase* node, T& element, ShadowCorners corner, double newValue)
+static inline void UpdateCornerRadius(ShadowNodeBase* node, XD::IXamlDirectObject element, ShadowCorners corner, double newValue, XD::XamlPropertyIndex propertyIndex)
 {
   node->m_cornerRadius[corner] = newValue;
-  winrt::CornerRadius cornerRadius = GetCornerRadius(node->m_cornerRadius, element.FlowDirection() == winrt::FlowDirection::RightToLeft);
-  element.CornerRadius(cornerRadius);
+  winrt::CornerRadius cornerRadius = GetCornerRadius(node->m_cornerRadius, IsFlowRTL(element));
+  XamlDirectInstance::GetXamlDirect().SetCornerRadiusProperty(element, propertyIndex, cornerRadius);
 }
 
-template <class T>
-bool TryUpdateForeground(const T& element, const std::string& propertyName, const folly::dynamic& propertyValue)
+static inline bool TryUpdateForeground(XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
 {
   if (propertyName == "color")
   {
     if (propertyValue.isNumber())
-      element.Foreground(BrushFrom(propertyValue));
+    {
+      XamlDirectInstance::GetXamlDirect().SetColorProperty(
+        element,
+        propertyIndex,
+        SolidColorBrushFrom(propertyValue).Color()
+      );
+    }
     else if (propertyValue.isNull())
-      element.ClearValue(T::ForegroundProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
 
     return true;
   }
@@ -140,52 +155,57 @@ bool TryUpdateForeground(const T& element, const std::string& propertyName, cons
   return false;
 }
 
-template <class T>
-bool TryUpdateBorderProperties(ShadowNodeBase* node, T& element, const std::string& propertyName, const folly::dynamic& propertyValue)
+static inline bool TryUpdateBorderProperties(ShadowNodeBase* node, XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
 {
   bool isBorderProperty = true;
 
   if (propertyName == "borderColor")
   {
     if (propertyValue.isNumber())
-      element.BorderBrush(BrushFrom(propertyValue));
+    {
+      XamlDirectInstance::GetXamlDirect().SetColorProperty(
+        element,
+        propertyIndex,
+        SolidColorBrushFrom(propertyValue).Color()
+      );
+    }
     else if (propertyValue.isNull())
-      element.ClearValue(T::BorderBrushProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
   }
   else if (propertyName == "borderLeftWidth")
   {
     if (propertyValue.isNumber())
-      SetBorderThickness(node, element, ShadowEdges::Left, propertyValue.asDouble());
+      SetBorderThickness(node, element, ShadowEdges::Left, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "borderTopWidth")
   {
     if (propertyValue.isNumber())
-      SetBorderThickness(node, element, ShadowEdges::Top, propertyValue.asDouble());
+      SetBorderThickness(node, element, ShadowEdges::Top, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "borderRightWidth")
   {
     if (propertyValue.isNumber())
-      SetBorderThickness(node, element, ShadowEdges::Right, propertyValue.asDouble());
+      SetBorderThickness(node, element, ShadowEdges::Right, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "borderBottomWidth")
   {
     if (propertyValue.isNumber())
-      SetBorderThickness(node, element, ShadowEdges::Bottom, propertyValue.asDouble());
+      SetBorderThickness(node, element, ShadowEdges::Bottom, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "borderStartWidth")
   {
     if (propertyValue.isNumber())
-      SetBorderThickness(node, element, ShadowEdges::Start, propertyValue.asDouble());
+      SetBorderThickness(node, element, ShadowEdges::Start, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "borderEndWidth")
   {
     if (propertyValue.isNumber())
-      SetBorderThickness(node, element, ShadowEdges::End, propertyValue.asDouble());
+      SetBorderThickness(node, element, ShadowEdges::End, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "borderWidth")
   {
     if (propertyValue.isNumber())
-      SetBorderThickness(node, element, ShadowEdges::AllEdges, propertyValue.asDouble());
+      SetBorderThickness(node, element, ShadowEdges::AllEdges, propertyValue.asDouble(), propertyIndex);
   }
   else
   {
@@ -195,55 +215,54 @@ bool TryUpdateBorderProperties(ShadowNodeBase* node, T& element, const std::stri
   return isBorderProperty;
 }
 
-template <class T>
-bool TryUpdatePadding(ShadowNodeBase* node, const T& element, const std::string& propertyName, const folly::dynamic& propertyValue)
+static inline bool TryUpdatePadding(ShadowNodeBase* node, XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
 {
   bool isPaddingProperty = true;
 
   if (propertyName == "paddingLeft")
   {
     if (propertyValue.isNumber())
-      UpdatePadding(node, element, ShadowEdges::Left, propertyValue.asDouble());
+      UpdatePadding(node, element, ShadowEdges::Left, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "paddingTop")
   {
     if (propertyValue.isNumber())
-      UpdatePadding(node, element, ShadowEdges::Top, propertyValue.asDouble());
+      UpdatePadding(node, element, ShadowEdges::Top, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "paddingRight")
   {
     if (propertyValue.isNumber())
-      UpdatePadding(node, element, ShadowEdges::Right, propertyValue.asDouble());
+      UpdatePadding(node, element, ShadowEdges::Right, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "paddingBottom")
   {
     if (propertyValue.isNumber())
-      UpdatePadding(node, element, ShadowEdges::Bottom, propertyValue.asDouble());
+      UpdatePadding(node, element, ShadowEdges::Bottom, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "paddingStart")
   {
     if (propertyValue.isNumber())
-      UpdatePadding(node, element, ShadowEdges::Start, propertyValue.asDouble());
+      UpdatePadding(node, element, ShadowEdges::Start, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "paddingEnd")
   {
     if (propertyValue.isNumber())
-      UpdatePadding(node, element, ShadowEdges::End, propertyValue.asDouble());
+      UpdatePadding(node, element, ShadowEdges::End, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "paddingHorizontal")
   {
     if (propertyValue.isNumber())
-      UpdatePadding(node, element, ShadowEdges::Horizontal, propertyValue.asDouble());
+      UpdatePadding(node, element, ShadowEdges::Horizontal, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "paddingVertical")
   {
     if (propertyValue.isNumber())
-      UpdatePadding(node, element, ShadowEdges::Vertical, propertyValue.asDouble());
+      UpdatePadding(node, element, ShadowEdges::Vertical, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "padding")
   {
     if (propertyValue.isNumber())
-      UpdatePadding(node, element, ShadowEdges::AllEdges, propertyValue.asDouble());
+      UpdatePadding(node, element, ShadowEdges::AllEdges, propertyValue.asDouble(), propertyIndex);
   }
   else
   {
@@ -253,53 +272,52 @@ bool TryUpdatePadding(ShadowNodeBase* node, const T& element, const std::string&
   return isPaddingProperty;
 }
 
-template <class T>
-bool TryUpdateCornerRadius(ShadowNodeBase* node, T& element, const std::string& propertyName, const folly::dynamic& propertyValue)
+static inline bool TryUpdateCornerRadius(ShadowNodeBase* node, XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
 {
   if (propertyName == "borderTopLeftRadius")
   {
     if (propertyValue.isNumber())
-      UpdateCornerRadius(node, element, ShadowCorners::TopLeft, propertyValue.asDouble());
+      UpdateCornerRadius(node, element, ShadowCorners::TopLeft, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "borderTopRightRadius")
   {
     if (propertyValue.isNumber())
-      UpdateCornerRadius(node, element, ShadowCorners::TopRight, propertyValue.asDouble());
+      UpdateCornerRadius(node, element, ShadowCorners::TopRight, propertyValue.asDouble(), propertyIndex);
   }
   if (propertyName == "borderTopStartRadius")
   {
     if (propertyValue.isNumber())
-      UpdateCornerRadius(node, element, ShadowCorners::TopStart, propertyValue.asDouble());
+      UpdateCornerRadius(node, element, ShadowCorners::TopStart, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "borderTopEndRadius")
   {
     if (propertyValue.isNumber())
-      UpdateCornerRadius(node, element, ShadowCorners::TopEnd, propertyValue.asDouble());
+      UpdateCornerRadius(node, element, ShadowCorners::TopEnd, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "borderBottomRightRadius")
   {
     if (propertyValue.isNumber())
-      UpdateCornerRadius(node, element, ShadowCorners::BottomRight, propertyValue.asDouble());
+      UpdateCornerRadius(node, element, ShadowCorners::BottomRight, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "borderBottomLeftRadius")
   {
     if (propertyValue.isNumber())
-      UpdateCornerRadius(node, element, ShadowCorners::BottomLeft, propertyValue.asDouble());
+      UpdateCornerRadius(node, element, ShadowCorners::BottomLeft, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "borderBottomStartRadius")
   {
     if (propertyValue.isNumber())
-      UpdateCornerRadius(node, element, ShadowCorners::BottomStart, propertyValue.asDouble());
+      UpdateCornerRadius(node, element, ShadowCorners::BottomStart, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "borderBottomEndRadius")
   {
     if (propertyValue.isNumber())
-      UpdateCornerRadius(node, element, ShadowCorners::BottomEnd, propertyValue.asDouble());
+      UpdateCornerRadius(node, element, ShadowCorners::BottomEnd, propertyValue.asDouble(), propertyIndex);
   }
   else if (propertyName == "borderRadius")
   {
     if (propertyValue.isNumber())
-      UpdateCornerRadius(node, element, ShadowCorners::AllCorners, propertyValue.asDouble());
+      UpdateCornerRadius(node, element, ShadowCorners::AllCorners, propertyValue.asDouble(), propertyIndex);
   }
   else
   {
@@ -309,61 +327,33 @@ bool TryUpdateCornerRadius(ShadowNodeBase* node, T& element, const std::string& 
   return true;
 }
 
-template <class T>
-bool TryUpdateFontProperties(const T& element, const std::string& propertyName, const folly::dynamic& propertyValue)
+static inline bool TryUpdateFontProperties(XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
 {
   bool isFontProperty = true;
 
   if (propertyName == "fontSize")
   {
     if (propertyValue.isNumber())
-      element.FontSize(propertyValue.asDouble());
+      XamlDirectInstance::GetXamlDirect().SetDoubleProperty(element, propertyIndex, propertyValue.asDouble());
     else if (propertyValue.isNull())
-      element.ClearValue(T::FontSizeProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
   }
   else if (propertyName == "fontFamily")
   {
     if (propertyValue.isString())
-      element.FontFamily(winrt::Windows::UI::Xaml::Media::FontFamily(asWStr(propertyValue)));
+      XamlDirectInstance::GetXamlDirect().SetStringProperty(element, propertyIndex, asHstring(propertyValue));
     else if (propertyValue.isNull())
-      element.ClearValue(T::FontFamilyProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
   }
   else if (propertyName == "fontWeight")
   {
     if (propertyValue.isString())
     {
-      const std::string& value = propertyValue.getString();
-      winrt::Windows::UI::Text::FontWeight fontWeight;
-      if (value == "normal")
-        fontWeight = winrt::Windows::UI::Text::FontWeights::Normal();
-      else if (value == "bold")
-        fontWeight = winrt::Windows::UI::Text::FontWeights::Bold();
-      else if (value == "100")
-        fontWeight.Weight = 100;
-      else if (value == "200")
-        fontWeight.Weight = 200;
-      else if (value == "300")
-        fontWeight.Weight = 300;
-      else if (value == "400")
-        fontWeight.Weight = 400;
-      else if (value == "500")
-        fontWeight.Weight = 500;
-      else if (value == "600")
-        fontWeight.Weight = 600;
-      else if (value == "700")
-        fontWeight.Weight = 700;
-      else if (value == "800")
-        fontWeight.Weight = 800;
-      else if (value == "900")
-        fontWeight.Weight = 900;
-      else
-        fontWeight = winrt::Windows::UI::Text::FontWeights::Normal();
-
-      element.FontWeight(fontWeight);
+      XamlDirectInstance::GetXamlDirect().SetStringProperty(element, propertyIndex, asHstring(propertyValue));
     }
     else if (propertyValue.isNull())
     {
-      element.ClearValue(T::FontWeightProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
     }
 
   }
@@ -371,13 +361,14 @@ bool TryUpdateFontProperties(const T& element, const std::string& propertyName, 
   {
     if (propertyValue.isString())
     {
-      element.FontStyle((propertyValue.getString() == "italic")
+      auto fontStyle = (propertyValue.getString() == "italic")
         ? winrt::Windows::UI::Text::FontStyle::Italic
-        : winrt::Windows::UI::Text::FontStyle::Normal);
+        : winrt::Windows::UI::Text::FontStyle::Normal;
+      XamlDirectInstance::GetXamlDirect().SetEnumProperty(element, propertyIndex, static_cast<uint32_t>(fontStyle));
     }
     else if (propertyValue.isNull())
     {
-      element.ClearValue(T::FontStyleProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
     }
 
   }
@@ -389,34 +380,33 @@ bool TryUpdateFontProperties(const T& element, const std::string& propertyName, 
   return isFontProperty;
 }
 
-template <class T>
-void SetTextAlignment(const T& element, const std::string& value)
+static inline void SetTextAlignment(XD::IXamlDirectObject element, const std::string& value, XD::XamlPropertyIndex propertyIndex)
 {
   if (value == "left")
-    element.TextAlignment(winrt::TextAlignment::Left);
+    XamlDirectInstance::GetXamlDirect().SetEnumProperty(element, propertyIndex, static_cast<uint32_t>(winrt::TextAlignment::Left));
   else if (value == "right")
-    element.TextAlignment(winrt::TextAlignment::Right);
+    XamlDirectInstance::GetXamlDirect().SetEnumProperty(element, propertyIndex, static_cast<uint32_t>(winrt::TextAlignment::Right));
   else if (value == "center")
-    element.TextAlignment(winrt::TextAlignment::Center);
+    XamlDirectInstance::GetXamlDirect().SetEnumProperty(element, propertyIndex, static_cast<uint32_t>(winrt::TextAlignment::Center));
   else if (value == "justify")
-    element.TextAlignment(winrt::TextAlignment::Justify);
+    XamlDirectInstance::GetXamlDirect().SetEnumProperty(element, propertyIndex, static_cast<uint32_t>(winrt::TextAlignment::Justify));
   else
-    element.TextAlignment(winrt::TextAlignment::DetectFromContent);
+    XamlDirectInstance::GetXamlDirect().SetEnumProperty(element, propertyIndex, static_cast<uint32_t>(winrt::TextAlignment::DetectFromContent));
 }
 
-template <class T>
-bool TryUpdateTextAlignment(const T& element, const std::string& propertyName, const folly::dynamic& propertyValue)
+static inline bool TryUpdateTextAlignment(XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
 {
   if (propertyName == "textAlign")
   {
     if (propertyValue.isString())
     {
       const std::string& value = propertyValue.getString();
-      SetTextAlignment(element, value);
+      SetTextAlignment(element, value, propertyIndex);
     }
     else if (propertyValue.isNull())
     {
-      element.ClearValue(T::TextAlignmentProperty());
+      //element.ClearValue(T::TextAlignmentProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
     }
 
     return true;
@@ -425,34 +415,32 @@ bool TryUpdateTextAlignment(const T& element, const std::string& propertyName, c
   return false;
 }
 
-template <class T>
-void SetTextTrimming(const T& element, const std::string& value)
+static inline void SetTextTrimming(XD::IXamlDirectObject element, const std::string& value, XD::XamlPropertyIndex propertyIndex)
 {
   if (value == "clip")
-    element.TextTrimming(winrt::TextTrimming::Clip);
+    XamlDirectInstance::GetXamlDirect().SetEnumProperty(element, propertyIndex, static_cast<uint32_t>(winrt::TextTrimming::Clip));
   else if (value == "head" || value == "middle" || value == "tail")
   {
     // "head" and "middle" not supported by UWP, but "tail"
     // behavior is the most similar
-    element.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
+    XamlDirectInstance::GetXamlDirect().SetEnumProperty(element, propertyIndex, static_cast<uint32_t>(winrt::TextTrimming::CharacterEllipsis));
   }
   else
-    element.TextTrimming(winrt::TextTrimming::None);
+    XamlDirectInstance::GetXamlDirect().SetEnumProperty(element, propertyIndex, static_cast<uint32_t>(winrt::TextTrimming::None));
 }
 
-template <class T>
-bool TryUpdateTextTrimming(const T& element, const std::string& propertyName, const folly::dynamic& propertyValue)
+static inline bool TryUpdateTextTrimming(XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
 {
   if (propertyName == "ellipsizeMode")
   {
     if (propertyValue.isString())
     {
       const std::string& value = propertyValue.getString();
-      SetTextTrimming(element, value);
+      SetTextTrimming(element, value, propertyIndex);
     }
     else if (propertyValue.isNull())
     {
-      element.ClearValue(T::TextTrimmingProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
     }
 
     return true;
@@ -461,8 +449,7 @@ bool TryUpdateTextTrimming(const T& element, const std::string& propertyName, co
   return false;
 }
 
-template <class T>
-bool TryUpdateTextDecorationLine(const T& element, const std::string& propertyName, const folly::dynamic& propertyValue)
+static inline bool TryUpdateTextDecorationLine(XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
 {
   if (propertyName == "textDecorationLine")
   {
@@ -486,11 +473,11 @@ bool TryUpdateTextDecorationLine(const T& element, const std::string& propertyNa
       else if (value == "underline line-through")
         decorations = TextDecorations::Underline | TextDecorations::Strikethrough;
 
-      element.TextDecorations(decorations);
+      XamlDirectInstance::GetXamlDirect().SetEnumProperty(element, propertyIndex, static_cast<uint32_t>(decorations));
     }
     else if (propertyValue.isNull())
     {
-      element.ClearValue(T::TextDecorationsProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
     }
 
     return true;
@@ -499,30 +486,39 @@ bool TryUpdateTextDecorationLine(const T& element, const std::string& propertyNa
   return false;
 }
 
-template <class T>
-void SetFlowDirection(const T& element, const std::string& value)
+static inline void SetFlowDirection(XD::IXamlDirectObject element, const std::string& value, XD::XamlPropertyIndex propertyIndex)
 {
   if (value == "rtl")
-    element.FlowDirection(winrt::FlowDirection::RightToLeft);
+    XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+      element,
+      propertyIndex,
+      static_cast<uint32_t>(winrt::FlowDirection::RightToLeft)
+    );
   else if (value =="ltr")
-    element.FlowDirection(winrt::FlowDirection::LeftToRight);
+    XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+      element,
+      propertyIndex,
+      static_cast<uint32_t>(winrt::FlowDirection::LeftToRight)
+    );
   else // 'auto', 'inherit'
-    element.ClearValue(winrt::FrameworkElement::FlowDirectionProperty());
+    XamlDirectInstance::GetXamlDirect().ClearProperty(
+      element,
+      propertyIndex
+    );
 }
 
-template <class T>
-bool TryUpdateFlowDirection(const T& element, const std::string& propertyName, const folly::dynamic& propertyValue)
+static inline bool TryUpdateFlowDirection(XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
 {
   if ((propertyName == "writingDirection") || (propertyName == "direction"))
   {
     if (propertyValue.isString())
     {
       const std::string& value = propertyValue.getString();
-      SetFlowDirection(element, value);
+      SetFlowDirection(element, value, propertyIndex);
     }
     else if (propertyValue.isNull())
     {
-      element.ClearValue(T::FlowDirectionProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
     }
 
     return true;
@@ -531,15 +527,21 @@ bool TryUpdateFlowDirection(const T& element, const std::string& propertyName, c
   return false;
 }
 
-template <class T>
-bool TryUpdateCharacterSpacing(const T& element, const std::string& propertyName, const folly::dynamic& propertyValue)
+static inline bool TryUpdateCharacterSpacing(XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
 {
   if (propertyName == "letterSpacing" || propertyName == "characterSpacing")
   {
     if (propertyValue.isNumber())
-      element.CharacterSpacing(static_cast<int32_t>(propertyValue.asDouble()));
+      XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+        element,
+        propertyIndex,
+        static_cast<int32_t>(propertyValue.asDouble())
+      );
     else if (propertyValue.isNull())
-      element.ClearValue(T::CharacterSpacingProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(
+        element,
+        propertyIndex
+      );
 
     return true;
   }
@@ -547,22 +549,29 @@ bool TryUpdateCharacterSpacing(const T& element, const std::string& propertyName
   return false;
 }
 
-template <class T>
-bool TryUpdateOrientation(const T& element, const std::string& propertyName, const folly::dynamic& propertyValue)
+static inline bool TryUpdateOrientation(XD::IXamlDirectObject element, const std::string& propertyName, const folly::dynamic& propertyValue, XD::XamlPropertyIndex propertyIndex)
 {
   if (propertyName == "orientation")
   {
     if (propertyValue.isNull())
     {
-      element.ClearValue(T::OrientationProperty());
+      XamlDirectInstance::GetXamlDirect().ClearProperty(element, propertyIndex);
     }
     else if (propertyValue.isString())
     {
       const std::string& valueString = propertyValue.getString();
       if (valueString == "horizontal")
-        element.Orientation(Orientation::Horizontal);
+        XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+          element,
+          propertyIndex,
+          static_cast<int32_t>(winrt::Orientation::Horizontal)
+        );
       else if (valueString == "vertical")
-        element.Orientation(Orientation::Vertical);
+        XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+          element,
+          propertyIndex,
+          static_cast<int32_t>(winrt::Orientation::Vertical)
+        );
     }
 
     return true;

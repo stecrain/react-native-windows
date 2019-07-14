@@ -13,6 +13,7 @@
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Controls.Primitives.h>
 
+#include <XamlDirectInstance.h>
 
 namespace winrt {
   using namespace Windows::UI::Xaml;
@@ -20,11 +21,6 @@ namespace winrt {
 }
 
 namespace react { namespace uwp {
-
-enum class CheckboxCommands
-{
-  SetFocus = 1,
-};
 
 class CheckBoxShadowNode : public ShadowNodeBase
 {
@@ -82,15 +78,6 @@ const char* CheckBoxViewManager::GetName() const
   return "RCTCheckBox";
 }
 
-folly::dynamic CheckBoxViewManager::GetCommands() const
-{
-  auto commands = Super::GetCommands();
-  commands.update(folly::dynamic::object
-    ("SetFocus", static_cast<std::underlying_type_t<CheckboxCommands>>(CheckboxCommands::SetFocus))
-  );
-  return commands;
-}
-
 folly::dynamic CheckBoxViewManager::GetNativeProps() const
 {
   auto props = Super::GetNativeProps();
@@ -120,6 +107,8 @@ void CheckBoxViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const f
   if (checkbox == nullptr)
     return;
 
+  auto checkboxXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(checkbox);
+
   for (const auto& pair : reactDiffMap.items())
   {
     const std::string& propertyName = pair.first.getString();
@@ -128,36 +117,34 @@ void CheckBoxViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const f
    if (propertyName == "disabled")
    {
      if (propertyValue.isBool())
-       checkbox.IsEnabled(!propertyValue.asBool());
+       XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+         checkboxXD,
+         XD::XamlPropertyIndex::Control_IsEnabled,
+         !propertyValue.asBool()
+       );
      else if (pair.second.isNull())
-       checkbox.ClearValue(winrt::Control::IsEnabledProperty());
+       XamlDirectInstance::GetXamlDirect().ClearProperty(
+         checkboxXD,
+         XD::XamlPropertyIndex::Control_IsEnabled
+       );
    }
    else if (propertyName == "checked")
    {
      if (propertyValue.isBool())
-       checkbox.IsChecked(propertyValue.asBool());
+       XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+         checkboxXD,
+         XD::XamlPropertyIndex::ToggleButton_IsChecked,
+         propertyValue.asBool()
+       );
      else if (pair.second.isNull())
-       checkbox.ClearValue(winrt::Primitives::ToggleButton::IsCheckedProperty());
+       XamlDirectInstance::GetXamlDirect().ClearProperty(
+         checkboxXD,
+         XD::XamlPropertyIndex::ToggleButton_IsChecked
+       );
    }
   }
 
   Super::UpdateProperties(nodeToUpdate, reactDiffMap);
-}
-
-void CheckBoxViewManager::DispatchCommand(XamlView viewToUpdate, int64_t commandId, const folly::dynamic& commandArgs)
-{
-  auto checkbox = viewToUpdate.as<winrt::CheckBox>();
-  if (checkbox == nullptr)
-    return;
-
-  switch (commandId)
-  {
-    case static_cast<int64_t>(CheckboxCommands::SetFocus):
-    {
-      checkbox.Focus(winrt::FocusState::Programmatic);
-      break;
-    }
-  }
 }
 
 }}

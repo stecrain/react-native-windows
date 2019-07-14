@@ -22,6 +22,8 @@
 #include <winrt/Windows.UI.Xaml.Input.h>
 #include <winrt/Windows.UI.Xaml.Media.h>
 
+#include <XamlDirectInstance.h>
+
 namespace react {
 namespace uwp {
 
@@ -102,6 +104,8 @@ void ReactControl::AttachRoot() noexcept
   if (!m_touchEventHandler)
     m_touchEventHandler = std::make_shared<TouchEventHandler>(m_reactInstance);
 
+  m_previewKeyboardEventHandlerOnRoot = std::make_shared<PreviewKeyboardEventHandlerOnRoot>(m_reactInstance);
+
   // Register callback from instance for live reload
   m_errorCallbackCookie = m_reactInstance->RegisterErrorCallback([this]()
   {
@@ -128,6 +132,8 @@ void ReactControl::AttachRoot() noexcept
 #endif
 
   m_touchEventHandler->AddTouchHandlers(m_xamlRootView);
+  m_previewKeyboardEventHandlerOnRoot->hook(m_xamlRootView);
+
   auto initialProps = m_initialProps;
   m_reactInstance->AttachMeasuredRootView(m_pParent, std::move(initialProps));
 
@@ -144,6 +150,9 @@ void ReactControl::DetachRoot() noexcept
     m_touchEventHandler->RemoveTouchHandlers();
   }
 
+  if (!m_previewKeyboardEventHandlerOnRoot)
+    m_previewKeyboardEventHandlerOnRoot->unhook();
+
   if (m_reactInstance != nullptr)
   {
     m_reactInstance->DetachRootView(m_pParent);
@@ -153,7 +162,14 @@ void ReactControl::DetachRoot() noexcept
     {
       auto grid(m_xamlRootView.as<winrt::Grid>());
       if (grid != nullptr)
-        grid.Children().Clear();
+      {
+        auto gridXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(grid);
+        auto gridChildrenXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObjectProperty(
+          gridXD,
+          XD::XamlPropertyIndex::Panel_Children
+        );
+        XamlDirectInstance::GetXamlDirect().ClearCollection(gridChildrenXD);
+      }
 
       m_redBoxGrid = nullptr;
       m_errorTextBlock = nullptr;
@@ -237,7 +253,12 @@ int64_t ReactControl::GetActualHeight() const
   auto element = m_xamlRootView.as<winrt::FrameworkElement>();
   assert(element != nullptr);
 
-  return static_cast<int64_t>(element.ActualHeight());
+  auto elementXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(element);
+  auto actualHeight = XamlDirectInstance::GetXamlDirect().GetDoubleProperty(
+    elementXD,
+    XD::XamlPropertyIndex::FrameworkElement_ActualHeight
+  );
+  return static_cast<int64_t>(actualHeight);
 }
 
 int64_t ReactControl::GetActualWidth() const
@@ -245,7 +266,12 @@ int64_t ReactControl::GetActualWidth() const
   auto element = m_xamlRootView.as<winrt::FrameworkElement>();
   assert(element != nullptr);
 
-  return static_cast<int64_t>(element.ActualWidth());
+  auto elementXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(element);
+  auto actualWidth = XamlDirectInstance::GetXamlDirect().GetDoubleProperty(
+    elementXD,
+    XD::XamlPropertyIndex::FrameworkElement_ActualWidth
+  );
+  return static_cast<int64_t>(actualWidth);
 }
 
 }

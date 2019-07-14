@@ -15,6 +15,7 @@
 #include <winrt/Windows.UI.Xaml.Controls.h>
 #include <winrt/Windows.UI.Xaml.Controls.Primitives.h>
 
+#include <XamlDirectInstance.h>
 
 namespace winrt {
   using namespace Windows::UI::Xaml;
@@ -22,11 +23,6 @@ namespace winrt {
 }
 
 namespace react { namespace uwp {
-
-enum class PickerCommands
-{
-  SetFocus = 1,
-};
 
 class PickerShadowNode : public ShadowNodeBase
 {
@@ -95,6 +91,9 @@ void PickerShadowNode::updateProperties(const folly::dynamic&& props)
 
   bool updateSelectedIndex = false;
   auto combobox = GetView().as<winrt::ComboBox>();
+
+  auto comboboxXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(combobox);
+
   for (auto& pair : props.items())
   {
     const std::string& propertyName = pair.first.getString();
@@ -105,9 +104,16 @@ void PickerShadowNode::updateProperties(const folly::dynamic&& props)
       if (m_isEditableComboboxSupported)
       {
         if (propertyValue.isBool())
-          combobox.IsEditable(propertyValue.asBool());
+          XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+            comboboxXD,
+            XD::XamlPropertyIndex::ComboBox_IsEditable,
+            propertyValue.asBool()
+          );
         else if (propertyValue.isNull())
-          combobox.ClearValue(winrt::ComboBox::IsEditableProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(
+            comboboxXD,
+            XD::XamlPropertyIndex::ComboBox_IsEditable
+          );
       }
     }
     else if (propertyName == "text")
@@ -115,15 +121,26 @@ void PickerShadowNode::updateProperties(const folly::dynamic&& props)
       if (m_isEditableComboboxSupported)
       {
         if (propertyValue.isString())
-          combobox.Text(asHstring(propertyValue));
+          XamlDirectInstance::GetXamlDirect().SetStringProperty(
+            comboboxXD,
+            XD::XamlPropertyIndex::ComboBox_Text,
+            asHstring(propertyValue)
+          );
         else if (propertyValue.isNull())
-          combobox.ClearValue(winrt::ComboBox::TextProperty());
+          XamlDirectInstance::GetXamlDirect().ClearProperty(
+            comboboxXD,
+            XD::XamlPropertyIndex::ComboBox_Text
+          );
       }
     }
     else if (propertyName == "enabled")
     {
       if (propertyValue.isBool())
-        combobox.IsEnabled(propertyValue.asBool());
+        XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+          comboboxXD,
+          XD::XamlPropertyIndex::Control_IsEnabled,
+          propertyValue.asBool()
+        );
     }
     else if (propertyName == "selectedIndex")
     {
@@ -149,7 +166,11 @@ void PickerShadowNode::updateProperties(const folly::dynamic&& props)
 
   // Update selectedIndex last, in case items and selectedIndex were both changing
   if (updateSelectedIndex)
-    combobox.SelectedIndex(m_selectedIndex);
+    XamlDirectInstance::GetXamlDirect().SetInt32Property(
+      comboboxXD,
+      XD::XamlPropertyIndex::Selector_SelectedIndex,
+      m_selectedIndex
+    );
 
   Super::updateProperties(std::move(props));
   m_updating = false;
@@ -159,23 +180,48 @@ void PickerShadowNode::RepopulateItems()
 {
   auto combobox = GetView().as<winrt::ComboBox>();
 
-  auto comboBoxItems = combobox.Items();
-  comboBoxItems.Clear();
+  auto comboboxXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(combobox);
+  auto comboboxItemsXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObjectProperty(
+    comboboxXD,
+    XD::XamlPropertyIndex::ItemsControl_Items
+  );
+  XamlDirectInstance::GetXamlDirect().ClearCollection(comboboxItemsXD);
+
   for (const auto& item : m_items)
   {
     if (item.count("label"))
     {
       std::string label = item["label"].asString();
-      auto comboboxItem = winrt::ComboBoxItem();
-      comboboxItem.Content(winrt::box_value(facebook::react::unicode::utf8ToUtf16(label)));
+
+      auto comboboxItem = XamlDirectInstance::GetXamlDirect().CreateInstance(XD::XamlTypeIndex::ComboBoxItem);      
+
+      XamlDirectInstance::GetXamlDirect().SetStringProperty(
+        comboboxItem,
+        XD::XamlPropertyIndex::ContentControl_Content,
+        facebook::react::unicode::utf8ToUtf16(label)
+      );
       if (item.count("textColor"))
-        comboboxItem.Foreground(BrushFrom(item["textColor"]));
-      comboBoxItems.Append(comboboxItem);
+      {
+          const auto propertyValueXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(BrushFrom(item["textColor"]));
+          XamlDirectInstance::GetXamlDirect().SetXamlDirectObjectProperty(
+            comboboxItem,
+            XD::XamlPropertyIndex::Control_Foreground,
+            propertyValueXD
+          );
+      }
+      auto items = XamlDirectInstance::GetXamlDirect().GetObject(comboboxItemsXD).as<winrt::ItemCollection>();
+      items.Append(XamlDirectInstance::GetXamlDirect().GetObject(comboboxItem).as<winrt::ComboBoxItem>());
+      // out of bounds error when adding to collection, otherwise use code below instead of 2 lines above
+       //XamlDirectInstance::GetXamlDirect().AddToCollection(comboboxItemsXD, comboboxItem);
     }
     m_hasNewItems = true;
   }
   if (m_selectedIndex < static_cast<int32_t>(m_items.size()))
-    combobox.SelectedIndex(m_selectedIndex);
+    XamlDirectInstance::GetXamlDirect().SetInt32Property(
+      comboboxXD,
+      XD::XamlPropertyIndex::Selector_SelectedIndex,
+      m_selectedIndex
+    );
 }
 
 /*static*/ void PickerShadowNode::OnSelectionChanged(IReactInstance& instance, int64_t tag, folly::dynamic&& value, int32_t selectedIndex, folly::dynamic&& text)
@@ -196,15 +242,6 @@ PickerViewManager::PickerViewManager(const std::shared_ptr<IReactInstance>& reac
 const char* PickerViewManager::GetName() const
 {
   return "RCTPicker";
-}
-
-folly::dynamic PickerViewManager::GetCommands() const
-{
-  auto commands = Super::GetCommands();
-  commands.update(folly::dynamic::object
-    ("SetFocus", static_cast<std::underlying_type_t<PickerCommands>>(PickerCommands::SetFocus))
-  );
-  return commands;
 }
 
 folly::dynamic PickerViewManager::GetNativeProps() const
@@ -231,22 +268,6 @@ XamlView PickerViewManager::CreateViewCore(int64_t tag)
 {
   auto combobox = winrt::ComboBox();
   return combobox;
-}
-
-void PickerViewManager::DispatchCommand(XamlView viewToUpdate, int64_t commandId, const folly::dynamic& commandArgs)
-{
-  auto combobox = viewToUpdate.as<winrt::ComboBox>();
-  if (combobox == nullptr)
-    return;
-
-  switch (static_cast<PickerCommands>(commandId))
-  {
-    case PickerCommands::SetFocus:
-    {
-      combobox.Focus(winrt::FocusState::Programmatic);
-      break;
-    }
-  }
 }
 
 YGMeasureFunc PickerViewManager::GetYogaCustomMeasureFunc() const

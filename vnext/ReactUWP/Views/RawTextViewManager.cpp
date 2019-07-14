@@ -13,6 +13,8 @@
 #include <winrt/Windows.UI.Xaml.Documents.h>
 #include <winrt/Windows.UI.Xaml.Controls.h>
 
+#include <XamlDirectInstance.h>
+
 namespace winrt {
 using namespace Windows::Foundation;
 using namespace Windows::UI;
@@ -46,6 +48,8 @@ void RawTextViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const fo
   if (run == nullptr)
     return;
 
+  auto runXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(run);
+
   for (const auto& pair : reactDiffMap.items())
   {
     const std::string& propertyName = pair.first.getString();
@@ -53,7 +57,11 @@ void RawTextViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate, const fo
 
     if (propertyName == "text")
     {
-      run.Text(asHstring(propertyValue));
+      XamlDirectInstance::GetXamlDirect().SetStringProperty(
+        runXD,
+        XD::XamlPropertyIndex::Run_Text,
+        asHstring(propertyValue)
+      );
     }
   }
   Super::UpdateProperties(nodeToUpdate, reactDiffMap);

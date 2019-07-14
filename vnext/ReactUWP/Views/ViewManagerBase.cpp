@@ -24,6 +24,9 @@ namespace react { namespace uwp {
 
 float GetConstrainedResult(float constrainTo, float measuredSize, YGMeasureMode measureMode)
 {
+  // Round up to workaround truncation inside yoga
+  measuredSize = ceil(measuredSize);
+
   if (measureMode == YGMeasureMode::YGMeasureModeExactly)
     return constrainTo;
   if (measureMode == YGMeasureMode::YGMeasureModeAtMost)
@@ -92,6 +95,8 @@ dynamic ViewManagerBase::GetNativeProps() const
   folly::dynamic props = folly::dynamic::object();
   props.update(folly::dynamic::object
     ("onLayout", "function")
+    ("keyDownEvents", "array")
+    ("keyUpEvents", "array")
   );
   return props;
 }
@@ -142,6 +147,10 @@ dynamic ViewManagerBase::GetExportedCustomBubblingEventTypeConstants() const
     "TouchMove",
     "TouchCancel",
     "TouchEnd",
+
+    // Keyboard events
+    "KeyUp",
+    "KeyDown",
   };
 
   folly::dynamic bubblingEvents = folly::dynamic::object();
@@ -229,6 +238,14 @@ void ViewManagerBase::UpdateProperties(ShadowNodeBase* nodeToUpdate, const dynam
     {
       nodeToUpdate->m_onLayout = !propertyValue.isNull() && propertyValue.asBool();
     }
+    else if (propertyName == "keyDownEvents")
+    {
+      nodeToUpdate->UpdateHandledKeyboardEvents(propertyName, propertyValue);
+    }
+    else if (propertyName == "keyUpEvents")
+    {
+      nodeToUpdate->UpdateHandledKeyboardEvents(propertyName, propertyValue);
+    }
   }
 }
 
@@ -248,12 +265,12 @@ void ViewManagerBase::SetLayoutProps(ShadowNodeBase& nodeToUpdate, XamlView view
     // TODO: Assert
     return;
   }
+  auto fe = element.as<winrt::FrameworkElement>();
 
   // Set Position & Size Properties
   ViewPanel::SetLeft(element, left);
   ViewPanel::SetTop(element, top);
 
-  auto fe = element.as<winrt::FrameworkElement>();
   fe.Width(width);
   fe.Height(height);
 
@@ -262,18 +279,18 @@ void ViewManagerBase::SetLayoutProps(ShadowNodeBase& nodeToUpdate, XamlView view
   {
     int64_t tag = GetTag(viewToUpdate);
     folly::dynamic layout = folly::dynamic::object
-      ("x", left)
-      ("y", top)
-      ("height", height)
-      ("width", width);
+    ("x", left)
+    ("y", top)
+    ("height", height)
+    ("width", width);
 
     folly::dynamic eventData = folly::dynamic::object
-      ("target", tag)
-      ("layout", std::move(layout));
+    ("target", tag)
+    ("layout", std::move(layout));
 
     auto instance = m_wkReactInstance.lock();
     if (instance != nullptr)
-      instance->DispatchEvent(tag, "topLayout", std::move(eventData));
+    instance->DispatchEvent(tag, "topLayout", std::move(eventData));
   }
 }
 
@@ -291,5 +308,6 @@ bool ViewManagerBase::IsNativeControlWithSelfLayout() const
 {
   return GetYogaCustomMeasureFunc() != nullptr;
 }
+
 
 } }

@@ -50,6 +50,8 @@ void ActivityIndicatorViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate
   if (progressRing == nullptr)
     return;
 
+  auto progressRingXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(progressRing);
+
   for (const auto& pair : reactDiffMap.items())
   {
     const std::string& propertyName = pair.first.getString();
@@ -58,9 +60,16 @@ void ActivityIndicatorViewManager::UpdateProperties(ShadowNodeBase* nodeToUpdate
     if (propertyName == "animating")
     {
       if (propertyValue.isBool())
-        progressRing.IsActive(propertyValue.asBool());
+        XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+          progressRingXD,
+          XD::XamlPropertyIndex::ProgressRing_IsActive,
+          propertyValue.asBool()
+        );
       else if (pair.second.isNull())
-        progressRing.ClearValue(winrt::ProgressRing::IsActiveProperty());
+        XamlDirectInstance::GetXamlDirect().ClearProperty(
+          progressRingXD,
+          XD::XamlPropertyIndex::ProgressRing_IsActive
+        );
     }
   }
 

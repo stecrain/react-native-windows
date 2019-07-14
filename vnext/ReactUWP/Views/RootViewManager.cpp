@@ -9,6 +9,8 @@
 
 #include <winrt/Windows.UI.Xaml.Controls.h>
 
+#include <XamlDirectInstance.h>
+
 namespace winrt {
 using namespace Windows::UI;
 using namespace Windows::UI::Xaml;
@@ -38,21 +40,52 @@ void RootViewManager::AddView(XamlView parent, XamlView child, int64_t index)
 {
   auto panel(parent.as<winrt::Panel>());
   if (panel != nullptr)
-    panel.Children().InsertAt(static_cast<uint32_t>(index), child.as<winrt::UIElement>());
+  {
+    auto panelXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(panel);
+
+    auto panelChildrenXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObjectProperty(
+      panelXD,
+      XD::XamlPropertyIndex::Panel_Children
+    );
+    auto childXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(child.as<winrt::UIElement>());
+    XamlDirectInstance::GetXamlDirect().InsertIntoCollectionAt(
+      panelChildrenXD,
+      static_cast<uint32_t>(index),
+      childXD
+    );
+  }
 }
 
 void RootViewManager::RemoveAllChildren(XamlView parent)
 {
   auto panel(parent.as<winrt::Panel>());
   if (panel != nullptr)
-    panel.Children().Clear();
+  {
+    auto panelXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(panel);
+    auto panelChildrenXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObjectProperty(
+      panelXD,
+      XD::XamlPropertyIndex::Panel_Children
+    );
+    XamlDirectInstance::GetXamlDirect().ClearCollection(panelChildrenXD);
+  }
 }
 
 void RootViewManager::RemoveChildAt(XamlView parent, int64_t index)
 {
   auto panel(parent.as<winrt::Panel>());
   if (panel != nullptr)
-    panel.Children().RemoveAt(static_cast<uint32_t>(index));
+  {
+    auto panelXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(panel);
+
+    auto panelChildrenXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObjectProperty(
+      panelXD,
+      XD::XamlPropertyIndex::Panel_Children
+    );
+    XamlDirectInstance::GetXamlDirect().RemoveFromCollectionAt(
+      panelChildrenXD,
+      static_cast<uint32_t>(index)
+    );
+  }
 }
 
 void RootViewManager::SetLayoutProps(ShadowNodeBase& /*nodeToUpdate*/, XamlView /*nodeToUpdate*/, float /*left*/, float /*top*/, float /*width*/, float /*height*/)

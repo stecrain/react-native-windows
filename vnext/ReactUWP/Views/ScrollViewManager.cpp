@@ -32,7 +32,7 @@ private:
     const char* eventName,
     double x, double y, double zoom);
   template <typename T> std::tuple<bool, T> getPropertyAndValidity(folly::dynamic propertyValue, T defaultValue);
-  void SetScrollMode(const winrt::ScrollViewer& scrollViewer);
+  void SetScrollMode(const XD::IXamlDirectObject& scrollViewerXD);
 
   float m_zoomFactor{ 1.0f };
   bool m_isScrollingFromInertia = false;
@@ -124,6 +124,8 @@ void ScrollViewShadowNode::updateProperties(const folly::dynamic&& reactDiffMap)
   if (scrollViewer == nullptr)
     return;
 
+  auto scrollViewerXD = XamlDirectInstance::GetXamlDirect().GetXamlDirectObject(scrollViewer);
+
   for (const auto& pair : reactDiffMap.items())
   {
     const std::string& propertyName = pair.first.getString();
@@ -136,7 +138,7 @@ void ScrollViewShadowNode::updateProperties(const folly::dynamic&& reactDiffMap)
       {
         m_isHorizontal = horizontal;
         ScrollViewUWPImplementation(scrollViewer).SetHorizontal(horizontal);
-        SetScrollMode(scrollViewer);
+        SetScrollMode(scrollViewerXD);
       }
     }
     if (propertyName == "scrollEnabled")
@@ -145,7 +147,7 @@ void ScrollViewShadowNode::updateProperties(const folly::dynamic&& reactDiffMap)
       if (valid)
       {
         m_isScrollingEnabled = scrollEnabled;
-        SetScrollMode(scrollViewer);
+        SetScrollMode(scrollViewerXD);
       }
     }
     else if (propertyName == "showsHorizontalScrollIndicator")
@@ -153,7 +155,11 @@ void ScrollViewShadowNode::updateProperties(const folly::dynamic&& reactDiffMap)
       const auto [valid, showsHorizontalScrollIndicator] = getPropertyAndValidity(propertyValue, true);
       if (valid)
       {
-        scrollViewer.HorizontalScrollBarVisibility(showsHorizontalScrollIndicator ? winrt::ScrollBarVisibility::Visible : winrt::ScrollBarVisibility::Hidden);
+        XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+          scrollViewerXD,
+          XD::XamlPropertyIndex::ScrollViewer_HorizontalScrollBarVisibility,
+          static_cast<bool>(showsHorizontalScrollIndicator ? winrt::ScrollBarVisibility::Visible : winrt::ScrollBarVisibility::Hidden)
+        );
       }
     }
     else if (propertyName == "showsVerticalScrollIndicator")
@@ -161,7 +167,11 @@ void ScrollViewShadowNode::updateProperties(const folly::dynamic&& reactDiffMap)
       const auto [valid, showsVerticalScrollIndicator] = getPropertyAndValidity(propertyValue, true);
       if (valid)
       {
-        scrollViewer.VerticalScrollBarVisibility(showsVerticalScrollIndicator ? winrt::ScrollBarVisibility::Visible : winrt::ScrollBarVisibility::Hidden);
+        XamlDirectInstance::GetXamlDirect().SetBooleanProperty(
+          scrollViewerXD,
+          XD::XamlPropertyIndex::ScrollViewer_VerticalScrollBarVisibility,
+          static_cast<bool>(showsVerticalScrollIndicator ? winrt::ScrollBarVisibility::Visible : winrt::ScrollBarVisibility::Hidden)
+        );
       }
     }
     else if (propertyName == "minimumZoomScale")
@@ -169,7 +179,11 @@ void ScrollViewShadowNode::updateProperties(const folly::dynamic&& reactDiffMap)
       const auto [valid, minimumZoomScale] = getPropertyAndValidity(propertyValue, 1.0);
       if (valid)
       {
-        scrollViewer.MinZoomFactor(static_cast<float>(minimumZoomScale));
+        XamlDirectInstance::GetXamlDirect().SetDoubleProperty(
+          scrollViewerXD,
+          XD::XamlPropertyIndex::ScrollViewer_MinZoomFactor,
+          static_cast<float>(minimumZoomScale)
+        );
       }
     }
     else if (propertyName == "maximumZoomScale")
@@ -177,7 +191,11 @@ void ScrollViewShadowNode::updateProperties(const folly::dynamic&& reactDiffMap)
       const auto [valid, maximumZoomScale] = getPropertyAndValidity(propertyValue, 1.0);
       if (valid)
       {
-        scrollViewer.MaxZoomFactor(static_cast<float>(maximumZoomScale));
+        XamlDirectInstance::GetXamlDirect().SetDoubleProperty(
+          scrollViewerXD,
+          XD::XamlPropertyIndex::ScrollViewer_MaxZoomFactor,
+          static_cast<float>(maximumZoomScale)
+        );
       }
     }
     else if (propertyName == "zoomScale")
@@ -209,8 +227,17 @@ void ScrollViewShadowNode::updateProperties(const folly::dynamic&& reactDiffMap)
       const auto [valid, snapToAlignment] = getPropertyAndValidity(propertyValue, winrt::SnapPointsAlignment::Near);
       if (valid)
       {
-        scrollViewer.HorizontalSnapPointsAlignment(snapToAlignment);
-        scrollViewer.VerticalSnapPointsAlignment(snapToAlignment);
+        const auto snapToAlignmentInt32 = static_cast<int32_t>(snapToAlignment);
+        XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+          scrollViewerXD,
+          XD::XamlPropertyIndex::ScrollViewer_HorizontalSnapPointsAlignment,
+          snapToAlignmentInt32
+        );
+        XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+          scrollViewerXD,
+          XD::XamlPropertyIndex::ScrollViewer_VerticalSnapPointsAlignment,
+          snapToAlignmentInt32
+        );
       }
     }
   }
@@ -427,12 +454,21 @@ std::tuple<bool, T> ScrollViewShadowNode::getPropertyAndValidity(folly::dynamic 
   return std::make_tuple(false, defaultValue);
 }
 
-void ScrollViewShadowNode::SetScrollMode(const winrt::ScrollViewer& scrollViewer)
+void ScrollViewShadowNode::SetScrollMode(const XD::IXamlDirectObject& scrollViewerXD)
 {
   const auto horizontalScrollingEnabled = m_isScrollingEnabled && m_isHorizontal;
   const auto verticalScrollingEnabled = m_isScrollingEnabled && !m_isHorizontal;
-  scrollViewer.HorizontalScrollMode(horizontalScrollingEnabled ? winrt::ScrollMode::Auto : winrt::ScrollMode::Disabled);
-  scrollViewer.VerticalScrollMode(verticalScrollingEnabled ? winrt::ScrollMode::Auto : winrt::ScrollMode::Disabled);
+
+  XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+    scrollViewerXD,
+    XD::XamlPropertyIndex::ScrollViewer_HorizontalScrollMode,
+    static_cast<int32_t>(horizontalScrollingEnabled ? winrt::ScrollMode::Auto : winrt::ScrollMode::Disabled)
+  );
+  XamlDirectInstance::GetXamlDirect().SetEnumProperty(
+    scrollViewerXD,
+    XD::XamlPropertyIndex::ScrollViewer_VerticalScrollMode,
+    static_cast<int32_t>(verticalScrollingEnabled ? winrt::ScrollMode::Auto : winrt::ScrollMode::Disabled)
+  );
 }
 
 ScrollViewManager::ScrollViewManager(const std::shared_ptr<IReactInstance>& reactInstance)
