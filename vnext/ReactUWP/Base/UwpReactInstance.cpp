@@ -182,12 +182,13 @@ std::vector<facebook::react::NativeModuleDescription> GetModules(
       []() { return std::make_unique<NetworkingModule>(); },
       std::make_shared<WorkerMessageQueueThread>());
 
+  auto timerWorkerQueue = std::make_shared<WorkerMessageQueueThread>();
   modules.emplace_back(
       "Timing",
-      [messageQueue]() {
-        return facebook::react::CreateTimingModule(messageQueue);
+      [timerWorkerQueue]() {
+        return facebook::react::CreateTimingModule(timerWorkerQueue);
       },
-      messageQueue);
+      timerWorkerQueue);
 
   modules.emplace_back(
       DeviceInfoModule::name,

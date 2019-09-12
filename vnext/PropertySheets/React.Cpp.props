@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Configuration">
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>

@@ -150,15 +150,20 @@ void Timing::createTimer(
 
   if (m_timerQueue.IsEmpty()) {
 #ifdef HEADLESS_JS
-    std::thread([this]() {
-      while (!m_timerQueue.IsEmpty()) {
-        auto sleepDuraction =
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                m_timerQueue.Front().TargetTime -
-                winrt::DateTime::clock::now());
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(sleepDuraction));
-        OnRendering();
+    std::thread([this]() {
+      if (m_parent) {
+        while (!m_timerQueue.IsEmpty()) {
+          // We start this thread once when a new timer is added.
+          // Checking the queue every 16 milliseconds seems excessive.
+          // But consider that a timer with a small timeout may be created
+          // *after* a timer with a large timeout. This makes it challenging
+          // to be smart about how long we sleep for.
+          std::this_thread::sleep_for(std::chrono::milliseconds(16));
+          if (m_parent) {
+            OnRendering();
+          }
+        }
       }
     })
         .detach();
