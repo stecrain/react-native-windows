@@ -3,8 +3,11 @@
 
 #pragma once
 
+#include <cxxReact/Instance.h>
 #include <cxxreact/CxxModule.h>
 #include <folly/dynamic.h>
+#include <winrt/Windows.Graphics.Display.h>
+#include <winrt/Windows.UI.ViewManagement.h>
 #include <memory>
 #include <vector>
 
@@ -14,9 +17,7 @@ namespace uwp {
 // TODO: Emit event to react when dimensions change.
 class DeviceInfo {
  public:
-  DeviceInfo() {
-    update();
-  }
+  DeviceInfo();
 
   folly::dynamic GetDimensionsConstants() {
     return m_dimensions;
@@ -24,10 +25,15 @@ class DeviceInfo {
   void update();
 
  private:
+  folly::dynamic getDimensions(
+      winrt::Windows::Graphics::Display::DisplayInformation displayInfo,
+      winrt::Windows::UI::Core::CoreWindow window);
+
   folly::dynamic m_dimensions;
 };
 
-class DeviceInfoModule : public facebook::xplat::module::CxxModule {
+class DeviceInfoModule : public facebook::xplat::module::CxxModule,
+                         std::enable_shared_from_this<DeviceInfoModule> {
  public:
   DeviceInfoModule(std::shared_ptr<DeviceInfo> deviceInfo);
 
@@ -39,6 +45,9 @@ class DeviceInfoModule : public facebook::xplat::module::CxxModule {
   static const char *name;
 
  private:
+  winrt::Windows::UI::Xaml::Application::LeavingBackground_revoker
+      m_leavingBackgroundRevoker;
+  void sendDimensionsChangedEvent();
   std::shared_ptr<DeviceInfo> m_deviceInfo;
 };
 
