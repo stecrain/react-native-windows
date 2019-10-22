@@ -32,6 +32,7 @@
 #include <Views/RootViewManager.h>
 #include <Views/ScrollContentViewManager.h>
 #include <Views/ScrollViewManager.h>
+#include <Views/SliderViewManager.h>
 #include <Views/SwitchViewManager.h>
 #include <Views/TextInputViewManager.h>
 #include <Views/TextViewManager.h>
@@ -125,6 +126,7 @@ CreateUIManager(
   viewManagers.push_back(std::make_unique<RawTextViewManager>(instance));
   viewManagers.push_back(std::make_unique<RootViewManager>(instance));
   viewManagers.push_back(std::make_unique<ScrollContentViewManager>(instance));
+  viewManagers.push_back(std::make_unique<SliderViewManager>(instance));
   viewManagers.push_back(std::make_unique<ScrollViewManager>(instance));
   viewManagers.push_back(std::make_unique<SwitchViewManager>(instance));
   viewManagers.push_back(std::make_unique<TextViewManager>(instance));
@@ -423,8 +425,7 @@ void UwpReactInstance::Start(
               std::move(scriptStore),
               std::move(preparedScriptStore));
 #else
-      if (settings.EnableByteCodeCacheing ||
-          !settings.ByteCodeFileUri.empty()) {
+      if (settings.EnableByteCodeCaching || !settings.ByteCodeFileUri.empty()) {
         scriptStore = std::make_unique<UwpScriptStore>();
         preparedScriptStore = std::make_unique<UwpPreparedScriptStore>(
             winrt::to_hstring(settings.ByteCodeFileUri));

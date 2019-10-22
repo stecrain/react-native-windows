@@ -300,6 +300,9 @@
     </ClCompile>
     <ClCompile Include="Threading\ProxyMessageQueueThread.cpp" >
       <Filter>Threading</Filter>
+	</ClCompile>
+    <ClCompile Include="Views\SliderViewManager.cpp">
+      <Filter>Views</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -639,9 +642,12 @@
     <ClInclude Include="Utils\CppWinrtLessExceptions.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Views\SliderViewManager.h">
+      <Filter>Views</Filter>
+    </ClInclude>
     <ClInclude Include="Modules\StatusBarModule.h">
       <Filter>Modules</Filter>
-    </ClInclude>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="EndPoints\dll\react-native-uwp.arm.def">
