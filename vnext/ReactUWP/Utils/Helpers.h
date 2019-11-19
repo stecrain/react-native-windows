@@ -27,9 +27,9 @@ inline typename T asEnum(folly::dynamic const &obj) {
   return static_cast<T>(obj.asInt());
 }
 
-ReactId getViewId(
-    _In_ IReactInstance *instance,
-    winrt::FrameworkElement const &fe);
+ReactId getViewId(_In_ IReactInstance *instance, winrt::FrameworkElement const &fe);
 std::int32_t CountOpenPopups();
+
+bool IsRS4OrHigher();
 } // namespace uwp
 } // namespace react

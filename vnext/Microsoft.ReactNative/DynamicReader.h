@@ -7,15 +7,12 @@
 
 namespace winrt::Microsoft::ReactNative::Bridge {
 
-struct DynamicReader
-    : winrt::implements<
-          DynamicReader,
-          winrt::Microsoft::ReactNative::Bridge::IJSValueReader> {
+struct DynamicReader : winrt::implements<DynamicReader, winrt::Microsoft::ReactNative::Bridge::IJSValueReader> {
   DynamicReader(const folly::dynamic &root) noexcept;
 
  public: // IJSValueReader
   winrt::Microsoft::ReactNative::Bridge::JSValueReaderState ReadNext() noexcept;
-  _Success_(return ) bool TryGetBoolen(_Out_ bool &value) noexcept;
+  _Success_(return ) bool TryGetBoolean(_Out_ bool &value) noexcept;
   _Success_(return ) bool TryGetInt64(_Out_ int64_t &value) noexcept;
   _Success_(return ) bool TryGetDouble(_Out_ double &value) noexcept;
   _Success_(return ) bool TryGetString(winrt::hstring &value) noexcept;
@@ -32,8 +29,7 @@ struct DynamicReader
   };
 
  private:
-  winrt::Microsoft::ReactNative::Bridge::JSValueReaderState ReadValue(
-      const folly::dynamic *value) noexcept;
+  winrt::Microsoft::ReactNative::Bridge::JSValueReaderState ReadValue(const folly::dynamic *value) noexcept;
   static std::u16string Utf8ToUtf16(const char *value, size_t size) noexcept;
 
  private:

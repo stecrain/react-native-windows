@@ -22,9 +22,7 @@ namespace Playground {
 /// </summary>
 ref class App sealed {
  protected:
-  virtual void OnLaunched(
-      Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^
-      e) override;
+  virtual void OnLaunched(Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ e) override;
 
   virtual void OnBackgroundActivated(
       Windows::ApplicationModel::Activation::BackgroundActivatedEventArgs ^
@@ -33,11 +31,7 @@ ref class App sealed {
   internal : App();
 
  private:
-  void OnSuspending(
-      Platform::Object ^ sender,
-      Windows::ApplicationModel::SuspendingEventArgs ^ e);
-  void OnNavigationFailed(
-      Platform::Object ^ sender,
-      Windows::UI::Xaml::Navigation::NavigationFailedEventArgs ^ e);
+  void OnSuspending(Platform::Object ^ sender, Windows::ApplicationModel::SuspendingEventArgs ^ e);
+  void OnNavigationFailed(Platform::Object ^ sender, Windows::UI::Xaml::Navigation::NavigationFailedEventArgs ^ e);
 };
 } // namespace Playground
