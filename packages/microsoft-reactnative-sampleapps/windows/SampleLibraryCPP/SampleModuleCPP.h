@@ -12,14 +12,14 @@
 #include "DebugHelpers.h"
 #include "NativeModules.h"
 
-namespace SampleLibraryCPP {
+#define DEBUG_OUTPUT(...) DebugWriteLine("SampleModuleCppImpl", ##__VA_ARGS__);
+
+namespace SampleLibraryCpp {
 
 // Sample REACT_MODULE
 
-REACT_MODULE(SampleModuleCPP);
-struct SampleModuleCPP {
-  const std::string Name = "SampleModuleCPP";
-
+REACT_MODULE(SampleModuleCppImpl, L"SampleModuleCpp");
+struct SampleModuleCppImpl {
 #pragma region Constants
 
   REACT_CONSTANT(NumberConstant);
@@ -40,23 +40,23 @@ struct SampleModuleCPP {
 
   REACT_METHOD(VoidMethod);
   void VoidMethod() noexcept {
-    DebugWriteLine(Name, "VoidMethod");
+    DEBUG_OUTPUT("VoidMethod");
   }
 
   REACT_METHOD(VoidMethodWithArgs);
   void VoidMethodWithArgs(double arg) noexcept {
-    DebugWriteLine(Name, "VoidMethodWithArgs", arg);
+    DEBUG_OUTPUT("VoidMethodWithArgs", arg);
   }
 
   REACT_METHOD(ReturnMethod);
   double ReturnMethod() noexcept {
-    DebugWriteLine(Name, "ReturnMethod");
+    DEBUG_OUTPUT("ReturnMethod");
     return M_PI;
   }
 
   REACT_METHOD(ReturnMethodWithArgs);
   double ReturnMethodWithArgs(double arg) noexcept {
-    DebugWriteLine(Name, "ReturnMethodWithArgs", arg);
+    DEBUG_OUTPUT("ReturnMethodWithArgs", arg);
     return M_PI;
   }
 
@@ -66,19 +66,19 @@ struct SampleModuleCPP {
 
   REACT_METHOD(ExplicitCallbackMethod);
   void ExplicitCallbackMethod(std::function<void(double)> &&callback) noexcept {
-    DebugWriteLine(Name, "ExplicitCallbackMethod");
+    DEBUG_OUTPUT("ExplicitCallbackMethod");
     callback(M_PI);
   }
 
   REACT_METHOD(ExplicitCallbackMethodWithArgs);
   void ExplicitCallbackMethodWithArgs(double arg, std::function<void(double)> &&callback) noexcept {
-    DebugWriteLine(Name, "ExplicitCallbackMethodWithArgs", arg);
+    DEBUG_OUTPUT("ExplicitCallbackMethodWithArgs", arg);
     callback(M_PI);
   }
 
   REACT_METHOD(ExplicitPromiseMethod);
-  void ExplicitPromiseMethod(winrt::Microsoft::ReactNative::Bridge::ReactPromise<double> &&result) noexcept {
-    DebugWriteLine(Name, "ExplicitPromiseMethod");
+  void ExplicitPromiseMethod(winrt::Microsoft::ReactNative::ReactPromise<double> &&result) noexcept {
+    DEBUG_OUTPUT("ExplicitPromiseMethod");
     try {
       result.Resolve(M_PI);
     } catch (const std::exception &ex) {
@@ -89,8 +89,8 @@ struct SampleModuleCPP {
   REACT_METHOD(ExplicitPromiseMethodWithArgs);
   void ExplicitPromiseMethodWithArgs(
       double arg,
-      winrt::Microsoft::ReactNative::Bridge::ReactPromise<double> &&result) noexcept {
-    DebugWriteLine(Name, "ExplicitPromiseMethodWithArgs", arg);
+      winrt::Microsoft::ReactNative::ReactPromise<double> &&result) noexcept {
+    DEBUG_OUTPUT("ExplicitPromiseMethodWithArgs", arg);
     try {
       result.Resolve(M_PI);
     } catch (const std::exception &ex) {
@@ -104,13 +104,13 @@ struct SampleModuleCPP {
 
   REACT_SYNC_METHOD(SyncReturnMethod);
   double SyncReturnMethod() noexcept {
-    DebugWriteLine(Name, "SyncReturnMethod");
+    DEBUG_OUTPUT("SyncReturnMethod");
     return M_PI;
   }
 
   REACT_SYNC_METHOD(SyncReturnMethodWithArgs);
   double SyncReturnMethodWithArgs(double arg) noexcept {
-    DebugWriteLine(Name, "SyncReturnMethodWithArgs", arg);
+    DEBUG_OUTPUT("SyncReturnMethodWithArgs", arg);
     return M_PI;
   }
 
@@ -118,13 +118,13 @@ struct SampleModuleCPP {
 
 #pragma region Events
 
-  REACT_EVENT(TimedEvent, L"TimedEventCPP");
+  REACT_EVENT(TimedEvent, L"TimedEventCpp");
   std::function<void(int)> TimedEvent;
 
 #pragma endregion
 
  public:
-  SampleModuleCPP() {
+  SampleModuleCppImpl() {
     m_timer = winrt::Windows::System::Threading::ThreadPoolTimer::CreatePeriodicTimer(
         [this](const winrt::Windows::System::Threading::ThreadPoolTimer) noexcept {
           if (TimedEvent) {
@@ -134,7 +134,7 @@ struct SampleModuleCPP {
         std::chrono::milliseconds(TimedEventIntervalMS));
   }
 
-  ~SampleModuleCPP() {
+  ~SampleModuleCppImpl() {
     if (m_timer) {
       m_timer.Cancel();
     }
@@ -146,4 +146,4 @@ struct SampleModuleCPP {
   const int TimedEventIntervalMS = 5000;
 };
 
-} // namespace SampleLibraryCPP
+} // namespace SampleLibraryCpp

@@ -1,4 +1,5 @@
 /dist
+/flow
 /lib
 /Libraries
 /local-cli/generator-windows/templates/index.windows.js
@@ -7,3 +8,4 @@
 /RNTester
 /index.*
 /RNTester.*
+/jest

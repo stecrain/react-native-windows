@@ -1,7 +1,104 @@
 # Change Log - react-native-windows
 
-This log was last generated on Mon, 16 Dec 2019 21:22:31 GMT and should not be manually modified.
+This log was last generated on Thu, 09 Jan 2020 23:20:10 GMT and should not be manually modified.
 
+## 0.60.0-vnext.112
+Thu, 09 Jan 2020 23:20:10 GMT
+
+### Changes
+
+- Header Refactoring Around jsireact to Unblock ms/rn (nick@nickgerleman.com)
+## 0.60.0-vnext.111
+Thu, 09 Jan 2020 22:06:05 GMT
+
+### Changes
+
+- Add GetFacebookReactInstance :: uwpInstance -> react::Instance (zihanc@microsoft.com)
+- Added unit tests for Events with JSValue args (jthysell@microsoft.com)
+## 0.60.0-vnext.110
+Wed, 08 Jan 2020 23:03:25 GMT
+
+### Changes
+
+- Image - basic svg support (mcota@microsoft.com)
+## 0.60.0-vnext.109
+Wed, 08 Jan 2020 01:43:57 GMT
+
+### Changes
+
+- Fixing bugs when using .NetNative (jthysell@microsoft.com)
+## 0.60.0-vnext.108
+Tue, 07 Jan 2020 19:44:17 GMT
+
+### Changes
+
+- Fix RNTester bundle (#2728) (acoates@microsoft.com)
+## 0.60.0-vnext.107
+Mon, 06 Jan 2020 21:29:21 GMT
+
+### Changes
+
+- Call StartAnimatiom on m_scaleCombined for ScaleX / ScaleY animations (thshea@microsoft.com)
+## 0.60.0-vnext.106
+Mon, 30 Dec 2019 22:14:37 GMT
+
+### Changes
+
+- Avoid app crash because content is not bundled for the first time (licanhua@live.com)
+## 0.60.0-vnext.105
+Fri, 27 Dec 2019 17:01:20 GMT
+
+### Changes
+
+- Changed Microsoft.ReactNative to be independent from ReactUWP project (vmorozov@microsoft.com)
+## 0.60.0-vnext.104
+Sat, 21 Dec 2019 03:41:33 GMT
+
+### Changes
+
+- Export ability to query native module names (ngerlem@microsoft.com)
+## 0.60.0-vnext.103
+Sat, 21 Dec 2019 00:18:22 GMT
+
+### Changes
+
+- Fix RNTester bundle (#2728) (acoates@microsoft.com)
+## 0.60.0-vnext.102
+Fri, 20 Dec 2019 19:01:50 GMT
+
+### Changes
+
+- Provide source uri in SourceCode module when using livereload (acoates@microsoft.com)
+## 0.60.0-vnext.101
+Fri, 20 Dec 2019 18:19:02 GMT
+
+### Changes
+
+- Get flow clean, and turn on flow check during build (acoates@microsoft.com)
+## 0.60.0-vnext.100
+Fri, 20 Dec 2019 05:18:08 GMT
+
+### Changes
+
+- Fix cornerRadius issue for TextInput and some updates to TreeDump (dida@ntdev.microsoft.com)
+## 0.60.0-vnext.99
+Thu, 19 Dec 2019 18:44:51 GMT
+
+### Changes
+
+- Removed Bridge sub-namespace in favor of Microsoft.ReactNative (vmorozov@microsoft.com)
+## 0.60.0-vnext.98
+Wed, 18 Dec 2019 21:47:15 GMT
+
+### Changes
+
+- port windowsbrush changes from Microsoft fork of react-native (kmelmon@microsoft.com)
+## 0.60.0-vnext.97
+Wed, 18 Dec 2019 01:40:40 GMT
+
+### Changes
+
+- Conditionally use BitmapImage (email not defined)
 ## 0.60.0-vnext.96
 Mon, 16 Dec 2019 21:22:31 GMT
 

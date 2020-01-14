@@ -9,14 +9,11 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Controls;
 
 using Microsoft.ReactNative.Managed;
-using Microsoft.ReactNative.Bridge;
 
 namespace SampleLibraryCS
 {
     internal class CustomUserControlViewManagerCS : AttributedViewManager<CustomUserControlCS>
     {
-        public CustomUserControlViewManagerCS(IReactContext reactContext) : base(reactContext) { }
-
         public override FrameworkElement CreateView()
         {
             var view = new CustomUserControlCS();

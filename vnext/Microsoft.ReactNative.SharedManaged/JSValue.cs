@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.ReactNative.Bridge;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -97,12 +96,12 @@ namespace Microsoft.ReactNative.Managed
       return false;
     }
 
-    public static bool operator ==(in JSValue lhs, in JSValue rhs)
+    public static bool operator ==(JSValue lhs, JSValue rhs)
     {
       return lhs.ValueEquals(rhs);
     }
 
-    public static bool operator !=(in JSValue lhs, in JSValue rhs)
+    public static bool operator !=(JSValue lhs, JSValue rhs)
     {
       return !lhs.ValueEquals(rhs);
     }
@@ -112,7 +111,7 @@ namespace Microsoft.ReactNative.Managed
       return ValueEquals(other);
     }
 
-    private bool ValueEquals(in JSValue other)
+    private bool ValueEquals(JSValue other)
     {
       if (Type == other.Type)
       {

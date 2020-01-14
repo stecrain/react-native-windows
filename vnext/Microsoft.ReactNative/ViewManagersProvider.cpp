@@ -8,7 +8,8 @@
 
 #include "ABIViewManager.h"
 
-namespace winrt::Microsoft::ReactNative::Bridge {
+namespace winrt::Microsoft::ReactNative {
+
 /*-------------------------------------------------------------------------------
         ViewManagersProvider::GetViewManagers
 -------------------------------------------------------------------------------*/
@@ -19,8 +20,7 @@ std::vector<react::uwp::NativeViewManager> ViewManagersProvider::GetViewManagers
   for (auto &entry : m_viewManagerProviders) {
     auto viewManagerProvider = entry.second;
 
-    auto reactContext = winrt::make<ReactContext>(instance).as<IReactContext>();
-    auto viewManager = std::make_unique<ABIViewManager>(instance, viewManagerProvider(reactContext));
+    auto viewManager = std::make_unique<ABIViewManager>(instance, viewManagerProvider());
 
     viewManagers.emplace_back(std::move(viewManager));
   }
@@ -36,4 +36,4 @@ void ViewManagersProvider::AddViewManagerProvider(
   m_viewManagerProviders.emplace(to_string(viewManagerName), viewManagerProvider);
 }
 
-} // namespace winrt::Microsoft::ReactNative::Bridge
+} // namespace winrt::Microsoft::ReactNative

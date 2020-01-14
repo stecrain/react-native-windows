@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.ReactNative.Bridge;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -492,7 +491,9 @@ namespace Microsoft.ReactNative.Managed
 
     public static IJSValueWriter WriteError<T>(this IJSValueWriter writer, T error)
     {
-      return (error is string errorMessage)
+      //TODO: Combine with error writing used for IReactPromise
+      var errorMessage = error as string;
+      return (errorMessage != null)
        ? writer.WriteArgs(new Dictionary<string, string> { ["message"] = errorMessage })
        : writer.WriteArgs(error);
     }

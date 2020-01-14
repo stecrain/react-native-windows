@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "JSValue.h"
 
-namespace winrt::Microsoft::ReactNative::Bridge {
+namespace winrt::Microsoft::ReactNative {
 
 //===========================================================================
 // JSValue implementation
@@ -15,6 +15,8 @@ namespace winrt::Microsoft::ReactNative::Bridge {
 /*static*/ const JSValueArray JSValue::EmptyArray;
 /*static*/ const std::string JSValue::EmptyString;
 
+#pragma warning(push)
+#pragma warning(disable : 26495) // False positive for union member not initialized
 JSValue::JSValue(JSValue &&other) noexcept : m_type{other.m_type} {
   switch (m_type) {
     case JSValueType::Object:
@@ -40,6 +42,7 @@ JSValue::JSValue(JSValue &&other) noexcept : m_type{other.m_type} {
   other.m_type = JSValueType::Null;
   other.m_int64 = 0;
 }
+#pragma warning(pop)
 
 JSValue &JSValue::operator=(JSValue &&other) noexcept {
   if (this != &other) {
@@ -321,4 +324,4 @@ void swap(JSValue &left, JSValue &right) noexcept {
   left = std::move(temp);
 }
 
-} // namespace winrt::Microsoft::ReactNative::Bridge
+} // namespace winrt::Microsoft::ReactNative

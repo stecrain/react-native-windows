@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 #pragma once
-#include "winrt/Microsoft.ReactNative.Bridge.h"
+#include "winrt/Microsoft.ReactNative.h"
 
 #include <type_traits>
 #include "JSValueReader.h"
@@ -53,7 +53,7 @@
 // Use with a field for events
 #define REACT_EVENT(/* field, [opt] eventName */...) INTERNAL_REACT_EVENT(__VA_ARGS__)(__VA_ARGS__)
 
-namespace winrt::Microsoft::ReactNative::Bridge {
+namespace winrt::Microsoft::ReactNative {
 
 namespace Internal {
 
@@ -653,10 +653,7 @@ struct ReactModuleBuilder {
       : m_module{module}, m_moduleBuilder{moduleBuilder} {}
 
   template <class TModule, int I>
-  void RegisterModule(
-      const wchar_t * /*moduleName*/,
-      const wchar_t *eventEmitterName,
-      winrt::Microsoft::ReactNative::Bridge::ReactMemberId<I>) noexcept {
+  void RegisterModule(const wchar_t * /*moduleName*/, const wchar_t *eventEmitterName, ReactMemberId<I>) noexcept {
     m_moduleBuilder.SetEventEmitterName(eventEmitterName);
     RegisterMembers<TModule, I>();
   }
@@ -719,13 +716,16 @@ struct BoxedValue : implements<BoxedValue<T>, IBoxedValue> {
     return reinterpret_cast<int64_t>(&m_value);
   }
 
-  static T &GetImpl(IBoxedValue &module) noexcept {
-    return *reinterpret_cast<T *>(module.GetPtr());
-  }
+  static T &GetImpl(IBoxedValue &module) noexcept;
 
  private:
   T m_value{};
 };
+
+template <class T>
+inline T &BoxedValue<T>::GetImpl(IBoxedValue &module) noexcept {
+  return *reinterpret_cast<T *>(module.GetPtr());
+}
 
 template <class TModule>
 inline ReactModuleProvider MakeModuleProvider() noexcept {
@@ -738,4 +738,4 @@ inline ReactModuleProvider MakeModuleProvider() noexcept {
   };
 }
 
-} // namespace winrt::Microsoft::ReactNative::Bridge
+} // namespace winrt::Microsoft::ReactNative

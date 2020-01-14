@@ -7,22 +7,19 @@
 #include "ReactPackageProvider.g.cpp"
 #endif
 
-#include "CircleViewManagerCPP.h"
-#include "CustomUserControlViewManagerCPP.h"
-#include "SampleModuleCPP.h"
+#include "CircleViewManagerCpp.h"
+#include "CustomUserControlViewManagerCpp.h"
+#include "SampleModuleCpp.h"
 
-using namespace winrt::Microsoft::ReactNative::Bridge;
+using namespace winrt::Microsoft::ReactNative;
 
-namespace winrt::SampleLibraryCPP::implementation {
+namespace winrt::SampleLibraryCpp::implementation {
 
 void ReactPackageProvider::CreatePackage(IReactPackageBuilder const &packageBuilder) noexcept {
   AddAttributedModules(packageBuilder);
-  packageBuilder.AddViewManager(L"CustomUserControlViewManagerCPP", [](IReactContext const &reactContext) {
-    return winrt::make<CustomUserControlViewManagerCPP>(reactContext);
-  });
-  packageBuilder.AddViewManager(L"CircleViewManagerCPP", [](IReactContext const & /*reactContext*/) {
-    return winrt::make<CircleViewManagerCPP>();
-  });
+  packageBuilder.AddViewManager(
+      L"CustomUserControlViewManagerCpp", []() { return winrt::make<CustomUserControlViewManagerCpp>(); });
+  packageBuilder.AddViewManager(L"CircleViewManagerCpp", []() { return winrt::make<CircleViewManagerCpp>(); });
 }
 
-} // namespace winrt::SampleLibraryCPP::implementation
+} // namespace winrt::SampleLibraryCpp::implementation

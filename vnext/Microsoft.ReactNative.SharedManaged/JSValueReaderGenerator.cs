@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.ReactNative.Bridge;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -199,7 +198,7 @@ namespace Microsoft.ReactNative.Managed
 
     // It cannot be an extension method because it would conflict with the generic
     // extension method that uses T value type.
-    public static void ReadEnum<TEnum>(IJSValueReader reader, out TEnum value) where TEnum : Enum
+    public static void ReadEnum<TEnum>(IJSValueReader reader, out TEnum value) /*TODO: Add in C# v7.3: where TEnum : Enum*/
     {
       value = (TEnum)(object)reader.ReadValue<int>();
     }

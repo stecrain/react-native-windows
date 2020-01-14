@@ -6,9 +6,9 @@
 #define MICROSOFT_REACTNATIVE_JSVALUEWRITER
 
 #include "StructInfo.h"
-#include "winrt/Microsoft.ReactNative.Bridge.h"
+#include "winrt/Microsoft.ReactNative.h"
 
-namespace winrt::Microsoft::ReactNative::Bridge {
+namespace winrt::Microsoft::ReactNative {
 
 //==============================================================================
 // IJSValueWriter extensions
@@ -35,11 +35,11 @@ template <class T, std::enable_if_t<std::is_enum_v<T>, int> = 1>
 void WriteValue(IJSValueWriter const &writer, T const &value) noexcept;
 template <class T>
 void WriteValue(IJSValueWriter const &writer, std::optional<T> const &value) noexcept;
-template <class T, class TCompare = std::less<>, class TAlloc = std::allocator<pair<const std::string, T>>>
+template <class T, class TCompare = std::less<>, class TAlloc = std::allocator<std::pair<const std::string, T>>>
 void WriteValue(IJSValueWriter const &writer, std::map<std::string, T, TCompare, TAlloc> const &value) noexcept;
-template <class T, class TCompare = std::less<>, class TAlloc = std::allocator<pair<const std::string, T>>>
+template <class T, class TCompare = std::less<>, class TAlloc = std::allocator<std::pair<const std::string, T>>>
 void WriteValue(IJSValueWriter const &writer, std::map<std::wstring, T, TCompare, TAlloc> const &value) noexcept;
-template <class T, class TAlloc = allocator<T>>
+template <class T, class TAlloc = std::allocator<T>>
 void WriteValue(IJSValueWriter const &writer, std::vector<T, TAlloc> const &value) noexcept;
 template <class... Ts>
 void WriteValue(IJSValueWriter const &writer, std::tuple<Ts...> const &value) noexcept;
@@ -231,6 +231,6 @@ inline void WriteArgs(IJSValueWriter const &writer, TArgs const &... args) noexc
   writer.WriteArrayEnd();
 }
 
-} // namespace winrt::Microsoft::ReactNative::Bridge
+} // namespace winrt::Microsoft::ReactNative
 
 #endif // MICROSOFT_REACTNATIVE_JSVALUEWRITER

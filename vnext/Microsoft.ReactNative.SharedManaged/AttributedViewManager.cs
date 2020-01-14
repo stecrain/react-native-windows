@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.ReactNative.Bridge;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -13,18 +12,14 @@ namespace Microsoft.ReactNative.Managed
 {
   internal abstract class AttributedViewManager<TFrameworkElement> :
     IViewManager,
+    IViewManagerWithReactContext,
     IViewManagerWithExportedViewConstants,
     IViewManagerWithNativeProperties,
     IViewManagerWithCommands,
     IViewManagerWithExportedEventTypeConstants
     where TFrameworkElement : FrameworkElement, new()
   {
-    public IReactContext ReactContext { get; private set; }
-
-    protected AttributedViewManager(IReactContext reactContext)
-    {
-      ReactContext = reactContext;
-    }
+    public IReactContext ReactContext { get; set; }
 
     #region IViewManager
 
